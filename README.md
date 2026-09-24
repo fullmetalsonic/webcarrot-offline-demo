@@ -17,12 +17,13 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 - 데모에서 **차량 선택**을 누르면 제조사 → 모델 → 확인 순서로 `CarSelected3` 값을 편집합니다. 기기에 즉시 적용되지는 않습니다. 실제 적용은 JSON 백업을 콤마에서 복원한 뒤 재시작해야 합니다.
 - 기존 백업을 불러오면 설정 수 차이를 이유로 파라미터를 자동 추가하거나 지우지 않습니다. 모르는 키, 수정하지 않은 값의 자료형과 중첩값은 내보낼 때 유지됩니다. 명시적으로 변경한 값만 저장되며, 선택한 차량은 `CarSelected3`에 기록됩니다.
+- 일부 백업은 이진 설정값을 문자열 `"True"`/`"False"`로 저장합니다. 데모 메뉴에 정의된 `min=0, max=1` 파라미터라면 화면에서 `1`/`0`으로 해석해 맞는 토글·선택 상태를 보여줍니다. 사용자가 바꾸기 전에는 원래 문자열을 그대로 내보내며, 편집한 뒤 해당 키만 숫자 문자열 `"0"`/`"1"`로 저장합니다. 현재 메뉴에 정의되지 않은 키의 값은 표시용 변환 없이 원본 그대로 보존합니다.
 - 내장 차량 목록은 원본의 차량 정의를 바탕으로 합니다. 기기별 추가 차량은 목록에 없을 수 있습니다. 기존 백업에 있는 그런 값도 그대로 보존됩니다.
 - 콤마 서버에서 받는 실제 차종별 인기값은 데모가 알 수 없어 표시하지 않습니다. 오프라인 안내로 구분합니다.
 
 ## 업데이트
 
-- 현재 버전은 **v1.0.0**이며, 설정 정의 기준은 `ajouatom/openpilot`의 `carrot-wip` 커밋 [`4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3)입니다.
+- 현재 버전은 **v1.0.1**이며, 설정 정의 기준은 `ajouatom/openpilot`의 `carrot-wip` 커밋 [`4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3)입니다.
 - 인터넷에 연결된 상태로 데모를 실행하면 최신 정식 Release를 백그라운드에서 확인합니다. **도구 → 데모 업데이트**에서 현재/최신 버전과 상태를 확인하거나 수동으로 다시 확인할 수 있습니다. 새 버전이 있을 때 **업데이트하기**가 나타납니다.
 - 웹 데모에서는 업데이트 전에 현재 백업을 브라우저에 임시 보관하고 새 버전을 연 뒤 복원합니다. 업데이트 과정의 문제에 대비해 중요한 값은 먼저 JSON 파일로도 내보내 두세요.
 - 다운로드한 HTML은 자기 파일을 직접 덮어쓸 수 없습니다. 업데이트 화면에서 **현재 설정 JSON 백업**을 저장하고, 새 HTML을 내려받아 연 뒤 백업을 다시 불러오세요.
@@ -62,12 +63,13 @@ The demo interface is currently in Korean; this README explains it in English as
 
 - **차량 선택** (Vehicle selection) edits `CarSelected3` through make → model → confirmation. The demo does not write to a device. To apply the choice, restore the exported JSON on the Comma device and restart it.
 - Importing a backup does not add or delete parameters just because the parameter counts differ. Unknown keys and unedited values, including their JSON types and nested structures, are preserved on export. Only explicit edits are saved; the chosen vehicle is recorded as `CarSelected3`.
+- Some backups store binary settings as the strings `"True"` or `"False"`. When a parameter is present in the demo schema with `min=0, max=1`, the UI interprets these as `1` and `0` to display the matching toggle or choice. The original string is exported unchanged unless the user edits it. After an explicit edit, only that key is saved as the numeric string `"0"` or `"1"`. Values for unknown parameters are preserved without display conversion.
 - The embedded vehicle catalog is based on upstream vehicle definitions. A device may include additional vehicles that are absent from this catalog; existing backup values for those vehicles are preserved.
 - Per-vehicle popular values come from the Comma server and are unavailable offline, so the demo labels them as unavailable instead of inventing statistics.
 
 ### Updates
 
-- The current demo is **v1.0.0**. Its settings are based on [`ajouatom/openpilot` `carrot-wip` commit `4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3).
+- The current demo is **v1.0.1**. Its settings are based on [`ajouatom/openpilot` `carrot-wip` commit `4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3).
 - When opened with an internet connection, the demo checks the latest stable GitHub Release in the background. Open **도구 → 데모 업데이트** (Tools → Demo update) to see the current/latest versions and status or check manually. An **업데이트하기** (Update) button appears when a newer stable version is available.
 - On the hosted web demo, the update flow temporarily saves the current backup in browser storage, opens the new version and restores the backup. For important settings, export a JSON backup first as well.
 - A downloaded HTML file cannot overwrite itself. Use the update dialog to save a JSON backup, download and open the new HTML, then import the backup.

@@ -10,6 +10,7 @@
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
 - Local HTML, served Pages HTML and downloaded Release HTML share SHA-256 `ba9bdc0e2eb08669cd71827febd618b18e74d7acbaf7cdcc40e70d525113d169`.
 - JavaScript syntax check passed. Runtime update scenarios and rendered UI/phone validation remain unrun.
+- v1.0.1 corrects display of imported `True`/`False` string values for schema-defined binary parameters. Unedited JSON values and unknown keys remain intact.
 
 ## Future releases
 
