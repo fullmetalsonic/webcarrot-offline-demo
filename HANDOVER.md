@@ -5,12 +5,13 @@
 - Repository: fullmetalsonic/webcarrot-offline-demo (public).
 - Pages source: main branch, repository root.
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
-- Initial app version: 1.0.0. WIP source: 43203371004e035bdb70a00a8dad29a4b657c6c3.
+- Current app version: 1.0.1. WIP source: 43203371004e035bdb70a00a8dad29a4b657c6c3.
 - Source schema and vehicle catalog are embedded; no runtime device connection.
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
-- Local HTML, served Pages HTML and downloaded Release HTML share SHA-256 `ba9bdc0e2eb08669cd71827febd618b18e74d7acbaf7cdcc40e70d525113d169`.
+- Published v1.0.1 on 2026-09-24. Pages built successfully; the latest stable Release API returned HTTP 200 with CORS allowed and `v1.0.1`.
+- Local HTML, served Pages HTML and downloaded v1.0.1 Release HTML share SHA-256 `e8203a19054b54f14cc59f0c05fe0ccf0212f25239a5e14a7c71653cf3f67429`.
 - JavaScript syntax check passed. Runtime update scenarios and rendered UI/phone validation remain unrun.
-- v1.0.1 corrects display of imported `True`/`False` string values for schema-defined binary parameters. Unedited JSON values and unknown keys remain intact.
+- v1.0.1 corrects display of imported `True`/`False` string values for schema-defined binary parameters. Unedited JSON values and unknown keys remain intact. The current user backup had 12 such values (5 true, 7 false); four keys are in the current menu and eight are unknown to its schema.
 
 ## Future releases
 
