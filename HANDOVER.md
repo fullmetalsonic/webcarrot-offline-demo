@@ -7,6 +7,9 @@
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
 - Initial app version: 1.0.0. WIP source: 43203371004e035bdb70a00a8dad29a4b657c6c3.
 - Source schema and vehicle catalog are embedded; no runtime device connection.
+- Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
+- Local HTML, served Pages HTML and downloaded Release HTML share SHA-256 `ba9bdc0e2eb08669cd71827febd618b18e74d7acbaf7cdcc40e70d525113d169`.
+- JavaScript syntax check passed. Runtime update scenarios and rendered UI/phone validation remain unrun.
 
 ## Future releases
 
