@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 | WebCarrot Offline Settings Demo
+# WebCarrot 오프라인 설정 데모 v1.0.2 | WebCarrot Offline Settings Demo v1.0.2
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -13,6 +13,8 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 3. **설정**에서 분류와 그룹을 따라가거나 검색해 파라미터를 찾습니다. 화면의 스위치·숫자 조절·선택 메뉴로 값을 편집합니다. **기본값** 버튼은 해당 파라미터 하나만 기본값으로 바꿉니다.
 4. **도구 → 백업 JSON 내보내기**를 눌러 저장합니다. 이 파일을 받은 사람도 자신의 콤마에서 불러와 동일한 설정값을 적용할 수 있습니다.
 
+휴대폰 브라우저의 뒤로가기는 차량 선택·값 선택창을 닫고, 설정 하위 그룹을 한 단계씩 거슬러 올라갑니다. 설정 첫 화면에서는 브라우저 기본 뒤로가기가 동작합니다.
+
 ## 차량 선택과 백업 보존
 
 - 데모에서 **차량 선택**을 누르면 제조사 → 모델 → 확인 순서로 `CarSelected3` 값을 편집합니다. 기기에 즉시 적용되지는 않습니다. 실제 적용은 JSON 백업을 콤마에서 복원한 뒤 재시작해야 합니다.
@@ -23,7 +25,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
-- 현재 버전은 **v1.0.1**이며, 설정 정의 기준은 `ajouatom/openpilot`의 `carrot-wip` 커밋 [`4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3)입니다.
+- 현재 버전은 **v1.0.2**이며, 설정 정의 기준은 `ajouatom/openpilot`의 `carrot-wip` 커밋 [`4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3)입니다.
 - 인터넷에 연결된 상태로 데모를 실행하면 최신 정식 Release를 백그라운드에서 확인합니다. **도구 → 데모 업데이트**에서 현재/최신 버전과 상태를 확인하거나 수동으로 다시 확인할 수 있습니다. 새 버전이 있을 때 **업데이트하기**가 나타납니다.
 - 웹 데모에서는 업데이트 전에 현재 백업을 브라우저에 임시 보관하고 새 버전을 연 뒤 복원합니다. 업데이트 과정의 문제에 대비해 중요한 값은 먼저 JSON 파일로도 내보내 두세요.
 - 다운로드한 HTML은 자기 파일을 직접 덮어쓸 수 없습니다. 업데이트 화면에서 **현재 설정 JSON 백업**을 저장하고, 새 HTML을 내려받아 연 뒤 백업을 다시 불러오세요.
@@ -59,6 +61,8 @@ The demo interface is currently in Korean; this README explains it in English as
 3. Find a parameter in the **설정** (Settings) menu by browsing categories and groups or by searching. Edit values with the displayed switches, numeric controls and choice menus. **기본값** (Default) changes only that parameter.
 4. In **도구** (Tools), select **백업 JSON 내보내기** (Export parameter backup) and share the JSON file. Another user can import that file on their Comma device to apply the same parameter values.
 
+On a phone, browser Back closes vehicle and value dialogs first, then walks back through settings groups one level at a time. At the top-level Settings screen, normal browser Back is allowed.
+
 ### Vehicle selection and backup preservation
 
 - **차량 선택** (Vehicle selection) edits `CarSelected3` through make → model → confirmation. The demo does not write to a device. To apply the choice, restore the exported JSON on the Comma device and restart it.
@@ -69,7 +73,7 @@ The demo interface is currently in Korean; this README explains it in English as
 
 ### Updates
 
-- The current demo is **v1.0.1**. Its settings are based on [`ajouatom/openpilot` `carrot-wip` commit `4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3).
+- The current demo is **v1.0.2**. Its settings are based on [`ajouatom/openpilot` `carrot-wip` commit `4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3).
 - When opened with an internet connection, the demo checks the latest stable GitHub Release in the background. Open **도구 → 데모 업데이트** (Tools → Demo update) to see the current/latest versions and status or check manually. An **업데이트하기** (Update) button appears when a newer stable version is available.
 - On the hosted web demo, the update flow temporarily saves the current backup in browser storage, opens the new version and restores the backup. For important settings, export a JSON backup first as well.
 - A downloaded HTML file cannot overwrite itself. Use the update dialog to save a JSON backup, download and open the new HTML, then import the backup.
