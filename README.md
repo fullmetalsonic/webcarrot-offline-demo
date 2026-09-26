@@ -25,18 +25,18 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
-- 현재 버전은 **v1.0.2**이며, 설정 정의 기준은 `ajouatom/openpilot`의 `carrot-wip` 커밋 [`4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3)입니다.
+- 현재 버전은 **v1.0.3**이며, 설정 정의 기준은 `ajouatom/openpilot`의 `carrot` 커밋 [`62d0043`](https://github.com/ajouatom/openpilot/commit/62d004320d5a8683b919379f16811a832a894cf5)입니다.
 - 인터넷에 연결된 상태로 데모를 실행하면 최신 정식 Release를 백그라운드에서 확인합니다. **도구 → 데모 업데이트**에서 현재/최신 버전과 상태를 확인하거나 수동으로 다시 확인할 수 있습니다. 새 버전이 있을 때 **업데이트하기**가 나타납니다.
 - 웹 데모에서는 업데이트 전에 현재 백업을 브라우저에 임시 보관하고 새 버전을 연 뒤 복원합니다. 업데이트 과정의 문제에 대비해 중요한 값은 먼저 JSON 파일로도 내보내 두세요.
 - 다운로드한 HTML은 자기 파일을 직접 덮어쓸 수 없습니다. 업데이트 화면에서 **현재 설정 JSON 백업**을 저장하고, 새 HTML을 내려받아 연 뒤 백업을 다시 불러오세요.
-- 업데이트 배포에는 전체 HTML이 포함되므로 새 파라미터뿐 아니라 설명과 메뉴 위치도 함께 갱신됩니다. 원본 WIP 변경을 자동으로 모두 가져오지는 않습니다. 유지보수자가 원본 변경을 검토하고 새 데모 Release를 만들어야 업데이트에 나타납니다.
+- 업데이트 배포에는 전체 HTML이 포함되므로 새 파라미터뿐 아니라 설명과 메뉴 위치도 함께 갱신됩니다. 원본 carrot 변경을 자동으로 모두 가져오지는 않습니다. 유지보수자가 원본 변경을 검토하고 새 데모 Release를 만들어야 업데이트에 나타납니다.
 - 네트워크 오류, 요청 제한, 시간 초과 또는 미배포 상태에서도 현재 설정 편집은 계속 가능합니다. 사전 릴리스는 일반 업데이트로 제공하지 않습니다.
 
 ## 데모의 범위
 
-현재 임베디드 원본 정의에는 **파라미터 184개**와 **차량 문서 이름 329개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
+현재 임베디드 원본 정의에는 **파라미터 185개**와 **차량 문서 이름 329개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
-데모는 `carrot-wip` 커밋 `43203371004e035bdb70a00a8dad29a4b657c6c3`의 UI·설정 구조를 참고합니다. 원본 WIP가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
+데모는 `carrot` 커밋 `62d004320d5a8683b919379f16811a832a894cf5`의 UI·설정 구조를 참고합니다. 원본 carrot가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
 
 ## 개인정보와 라이선스
 
@@ -73,18 +73,18 @@ On a phone, browser Back closes vehicle and value dialogs first, then walks back
 
 ### Updates
 
-- The current demo is **v1.0.2**. Its settings are based on [`ajouatom/openpilot` `carrot-wip` commit `4320337`](https://github.com/ajouatom/openpilot/commit/43203371004e035bdb70a00a8dad29a4b657c6c3).
+- The current demo is **v1.0.3**. Its settings are based on [`ajouatom/openpilot` `carrot` commit `62d0043`](https://github.com/ajouatom/openpilot/commit/62d004320d5a8683b919379f16811a832a894cf5).
 - When opened with an internet connection, the demo checks the latest stable GitHub Release in the background. Open **도구 → 데모 업데이트** (Tools → Demo update) to see the current/latest versions and status or check manually. An **업데이트하기** (Update) button appears when a newer stable version is available.
 - On the hosted web demo, the update flow temporarily saves the current backup in browser storage, opens the new version and restores the backup. For important settings, export a JSON backup first as well.
 - A downloaded HTML file cannot overwrite itself. Use the update dialog to save a JSON backup, download and open the new HTML, then import the backup.
-- Each update contains the complete demo, including parameter definitions, descriptions and menu locations. Upstream WIP commits are not imported automatically. A maintainer must review upstream changes and publish a new demo Release before it appears here.
+- Each update contains the complete demo, including parameter definitions, descriptions and menu locations. Official upstream carrot commits are not imported automatically. A maintainer must review upstream changes and publish a new demo Release before it appears here.
 - Editing remains available when offline or when GitHub is rate-limited, times out, or has no published release. Prereleases are excluded from normal updates.
 
 ### Scope
 
-The embedded upstream definitions currently include **184 parameters** and **329 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
+The embedded upstream definitions currently include **185 parameters** and **329 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
-This demo references the UI and settings structure from `carrot-wip` commit `43203371004e035bdb70a00a8dad29a4b657c6c3`. It does not automatically track changes in upstream WIP. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
+This demo references the UI and settings structure from `carrot` commit `62d004320d5a8683b919379f16811a832a894cf5`. It does not automatically track changes in upstream carrot. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
 
 ### Privacy and license
 

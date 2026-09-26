@@ -5,7 +5,7 @@
 - Repository: fullmetalsonic/webcarrot-offline-demo (public).
 - Pages source: main branch, repository root.
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
-- Current app version: 1.0.2. WIP source: 43203371004e035bdb70a00a8dad29a4b657c6c3.
+- Current published app version: 1.0.2. Local source schema now targets official ajouatom/openpilot:carrot at 62d004320d5a8683b919379f16811a832a894cf5; this local source sync has not been released.
 - Source schema and vehicle catalog are embedded; no runtime device connection.
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
 - Published v1.0.1 on 2026-09-24. Pages built successfully; the latest stable Release API returned HTTP 200 with CORS allowed and `v1.0.1`.
@@ -16,7 +16,7 @@
 
 ## Future releases
 
-1. Review the intended upstream WIP settings, menu, descriptions and relevant web renderer changes.
+1. Review the official ajouatom/openpilot:carrot settings, menu, descriptions and relevant web renderer changes.
 2. Update the embedded data and code together. Preserve unknown imported keys, absent settings, JSON types and nested values. Do not migrate a user's backup based on parameter count.
 3. Increment the single application-version constant using stable SemVer. Keep the upstream source SHA separate from the demo version.
 4. Review only the intended distributable files for credentials, personal backups and private paths. Include upstream license notices.
@@ -30,3 +30,12 @@ No local URL/browser workaround is allowed by the user's instructions. The curre
 ## Publication contents
 
 Only the demo, public documentation and source license notices belong here. Never include real parameter backups, device captures, automation logs or private workspace files.
+
+## Official carrot source correction (2026-09-26)
+
+- The user clarified that the public demo follows official `ajouatom/openpilot:carrot`. The personal `fullmetalsonic` WIP paddle patch is private user functionality and is excluded from the demo menu.
+- Embedded settings and complete menu are copied from upstream commit `62d004320d5a8683b919379f16811a832a894cf5`: 185 parameters. `PaddleMode` retains the official range 0 through 3 and its official descriptions/options.
+- Added menu parameters: `CanfdStopRetry`, `ClusterHudLiveFps`, `ClusterHudCoreMode`, `ClusterHudPriority`. Removed menu parameters: `CruiseCoastingPercent`, `RadarTrackFlip`, `StoppingAccel`. Upstream hierarchy, ordering, labels, descriptions and controls are preserved as a complete schema.
+- Removed schema keys remain intact when present in an imported backup. No backup normalization or count-based migration was added.
+- This is a local unreleased change; version remains 1.0.2 until the maintainer prepares a release. README source/count describes this checkout. Existing Pages and Release artifacts require a separate authorized publication step.
+- Focused source/schema equality, JavaScript syntax and whitespace checks are recorded by the integrating agent. Rendered and physical phone validation remain unrun.
