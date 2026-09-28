@@ -5,7 +5,7 @@
 - Repository: fullmetalsonic/webcarrot-offline-demo (public).
 - Pages source: main branch, repository root.
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
-- Current published version: 1.0.5. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 70b1f568cb33ef3c5fa5ada235a177ba39807b65 (184 parameters; PaddleMode max=3).
+- Current published version: 1.0.6. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 123db00c1dfc210caa7939912f9bc342a3f5c146 (185 parameters; PaddleMode max=3).
 - Source schema and vehicle catalog are embedded; no runtime device connection.
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
 - Published v1.0.1 on 2026-09-24. Pages built successfully; the latest stable Release API returned HTTP 200 with CORS allowed and `v1.0.1`.
@@ -57,3 +57,11 @@ Only the demo, public documentation and source license notices belong here. Neve
 - Menu tree and parameter count remain unchanged at 184. VEgoStopping minimum changes from 1 to 10 and its Korean/English/Chinese descriptions now state the enforced minimum and saved-value adjustment. MyDrivingModeAuto descriptions change in Korean/English/Chinese.
 - JSON import/export logic is unchanged. Unknown keys and unedited imported values remain preserved.
 - Pages, repository index.html, workspace mirror and Release HTML SHA-256: EFCA8151D5C062E8DDACFCE5F4A787DCFE2EDFCE7958E840E360A12AE81F326F. Focused source/schema equality, JavaScript syntax, git diff --check, Pages build, latest Release API/CORS and artifact parity passed. Visual/phone validation remains unrun.
+
+## Published v1.0.6 official driver monitoring settings update (2026-09-28)
+
+- Source is official ajouatom/openpilot:carrot-wip commit 123db00c1dfc210caa7939912f9bc342a3f5c146. The branch also changed during preparation from aecc1cc to 123db00; the latter updated DriverMonitoringMode descriptions in Korean, English and Chinese and was included before publication.
+- The official menu replaces DisableDM with DriverMonitoringMode and CarrotVisionEnabled, giving 185 parameters. The demo uses the complete source schema, menu, descriptions, choices, limits and defaults. Experimental mode 1 requires the official Korean confirmation wording.
+- Imported DisableDM and other unsupported keys, and unedited values, remain in exported backup JSON. Demo code commit: e319d4f8000e01b574af956d2898fee837327844.
+- Pages build succeeded. Local index.html, served Pages HTML and downloaded v1.0.6 Release asset webcarrot-offline-demo.html share SHA-256 A6513AB0AC59F9522C50C1D018006A0832F93964C7B20BCCA6B629FE6E7E1172. Latest stable Release API returned v1.0.6 with CORS allowed.
+- Exact source/schema/menu equality, JavaScript syntax, git diff --check and focused confirmation/backup preservation checks passed. Rendered visual and physical phone validation remain unrun.
