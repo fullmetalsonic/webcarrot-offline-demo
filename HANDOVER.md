@@ -5,13 +5,14 @@
 - Repository: fullmetalsonic/webcarrot-offline-demo (public).
 - Pages source: main branch, repository root.
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
-- Current published version: 1.0.3. Local candidate: 1.0.4, settings/menu source official ajouatom/openpilot:carrot-wip commit d4fca67f20bc18ea543d93f9db5a7ac4fef66f91. This candidate has not been published.
+- Current published version: 1.0.5. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 962d4484e737bcc98fcbffdfdfd1697600685962 (184 parameters; PaddleMode max=3).
 - Source schema and vehicle catalog are embedded; no runtime device connection.
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
 - Published v1.0.1 on 2026-09-24. Pages built successfully; the latest stable Release API returned HTTP 200 with CORS allowed and `v1.0.1`.
 - Local HTML, served Pages HTML and downloaded v1.0.1 Release HTML share SHA-256 `e8203a19054b54f14cc59f0c05fe0ccf0212f25239a5e14a7c71653cf3f67429`.
 - Published v1.0.2 on 2026-09-25 with hierarchical browser Back behavior.
 - Published v1.0.3 on 2026-09-26 with the official `carrot` settings/menu schema. Pages, repository `index.html`, workspace copy, and Release asset SHA-256: `A4E3022947423C1DD7A762F034E6961F5118598203CF11E7352B65F842B31E73`.
+- Published v1.0.4 on 2026-09-26 from official carrot-wip d4fca67f20bc18ea543d93f9db5a7ac4fef66f91 (184 parameters); Pages/repository/Release HTML SHA-256: 951CC689EEF295141518A30487A8637AE664D7C1EA4B1F1011D3F59EF0D2A016.
 - JavaScript syntax check passed. Runtime update scenarios and rendered UI/phone validation remain unrun.
 - v1.0.1 corrects display of imported `True`/`False` string values for schema-defined binary parameters. Unedited JSON values and unknown keys remain intact. The current user backup had 12 such values (5 true, 7 false); four keys are in the current menu and eight are unknown to its schema.
 - v1.0.2 records hierarchical in-app view state in browser history: Android/browser Back returns through settings, search, vehicle and value-dialog steps. The Settings top level does not trap Back. Syntax checked; real phone/browser interaction remains unverified.
@@ -42,10 +43,17 @@ Only the demo, public documentation and source license notices belong here. Neve
 - Published as v1.0.3. Focused source/schema equality, JavaScript syntax, `git diff --check`, Pages build, latest Release metadata, and downloaded asset hash passed.
 - Rendered screenshot parity and physical phone interaction remain unrun.
 
-## Official carrot-wip correction: local v1.0.4 candidate
+## Published v1.0.4 official carrot-wip correction (2026-09-26)
 
 - The intended demo source is official `ajouatom/openpilot:carrot-wip`. Do not use personal `fullmetalsonic` fork changes.
 - Embedded schema/menu is copied as a complete object from `d4fca67f20bc18ea543d93f9db5a7ac4fef66f91`, including parameter additions/deletions, descriptions, ranges/defaults/options and menu hierarchy/order.
 - JSON import/export and value normalization are unchanged. Unknown keys and unedited backup values are preserved even if menu definitions differ.
-- Demo version is 1.0.4; publication and artifact integration are pending. v1.0.3 remains the historical published release until the maintainer publishes this candidate.
-- Focused schema/menu equality, JavaScript syntax and diff whitespace checks were run; visual/device validation is unrun.
+- Published as v1.0.4. Pages, repository and Release HTML SHA-256 was 951CC689EEF295141518A30487A8637AE664D7C1EA4B1F1011D3F59EF0D2A016.
+- Focused schema/menu equality, JavaScript syntax, diff whitespace checks, Pages build and public asset parity passed; visual/device validation is unrun.
+
+## Published v1.0.5 official carrot-wip settings update (2026-09-28)
+
+- Source is official ajouatom/openpilot:carrot-wip commit 962d4484e737bcc98fcbffdfdfd1697600685962.
+- Menu tree and parameter count remain unchanged at 184. VEgoStopping minimum changes from 1 to 10 and its Korean/English/Chinese descriptions now state the enforced minimum and saved-value adjustment. MyDrivingModeAuto descriptions change in Korean/English/Chinese.
+- JSON import/export logic is unchanged. Unknown keys and unedited imported values remain preserved.
+- Pages, repository index.html, workspace mirror and Release HTML SHA-256: 8393B985C5BACF98CE473D338ADC1E94CD0E054E2C2E1BC03803531CA2AFC1BB. Focused source/schema equality, JavaScript syntax, git diff --check, Pages build, latest Release API/CORS and artifact parity passed. Visual/phone validation remains unrun.
