@@ -5,7 +5,7 @@
 - Repository: fullmetalsonic/webcarrot-offline-demo (public).
 - Pages source: main branch, repository root.
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
-- Current published version: 1.0.5. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 962d4484e737bcc98fcbffdfdfd1697600685962 (184 parameters; PaddleMode max=3).
+- Current published version: 1.0.5. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 70b1f568cb33ef3c5fa5ada235a177ba39807b65 (184 parameters; PaddleMode max=3).
 - Source schema and vehicle catalog are embedded; no runtime device connection.
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
 - Published v1.0.1 on 2026-09-24. Pages built successfully; the latest stable Release API returned HTTP 200 with CORS allowed and `v1.0.1`.
@@ -53,7 +53,7 @@ Only the demo, public documentation and source license notices belong here. Neve
 
 ## Published v1.0.5 official carrot-wip settings update (2026-09-28)
 
-- Source is official ajouatom/openpilot:carrot-wip commit 962d4484e737bcc98fcbffdfdfd1697600685962.
+- Source is official ajouatom/openpilot:carrot-wip commit 70b1f568cb33ef3c5fa5ada235a177ba39807b65.
 - Menu tree and parameter count remain unchanged at 184. VEgoStopping minimum changes from 1 to 10 and its Korean/English/Chinese descriptions now state the enforced minimum and saved-value adjustment. MyDrivingModeAuto descriptions change in Korean/English/Chinese.
 - JSON import/export logic is unchanged. Unknown keys and unedited imported values remain preserved.
-- Pages, repository index.html, workspace mirror and Release HTML SHA-256: 8393B985C5BACF98CE473D338ADC1E94CD0E054E2C2E1BC03803531CA2AFC1BB. Focused source/schema equality, JavaScript syntax, git diff --check, Pages build, latest Release API/CORS and artifact parity passed. Visual/phone validation remains unrun.
+- Pages, repository index.html, workspace mirror and Release HTML SHA-256: EFCA8151D5C062E8DDACFCE5F4A787DCFE2EDFCE7958E840E360A12AE81F326F. Focused source/schema equality, JavaScript syntax, git diff --check, Pages build, latest Release API/CORS and artifact parity passed. Visual/phone validation remains unrun.

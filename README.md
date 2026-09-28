@@ -27,7 +27,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 현재 정식 데모는 공식 carrot-wip 기준 v1.0.5입니다.
 
-- 현재 버전은 **v1.0.5**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [962d448](https://github.com/ajouatom/openpilot/commit/962d4484e737bcc98fcbffdfdfd1697600685962)입니다.
+- 현재 버전은 **v1.0.5**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [70b1f56](https://github.com/ajouatom/openpilot/commit/70b1f568cb33ef3c5fa5ada235a177ba39807b65)입니다.
 - 이번 갱신은 메뉴와 파라미터 184개를 유지하고, VEgoStopping 최소값(1→10) 및 한·영·중 설명과 MyDrivingModeAuto의 한·영·중 설명을 공식 정의에 맞췄습니다.
 - 인터넷에 연결된 상태로 데모를 실행하면 최신 정식 Release를 백그라운드에서 확인합니다. **도구 → 데모 업데이트**에서 현재/최신 버전과 상태를 확인하거나 수동으로 다시 확인할 수 있습니다. 새 버전이 있을 때 **업데이트하기**가 나타납니다.
 - 웹 데모에서는 업데이트 전에 현재 백업을 브라우저에 임시 보관하고 새 버전을 연 뒤 복원합니다. 업데이트 과정의 문제에 대비해 중요한 값은 먼저 JSON 파일로도 내보내 두세요.
@@ -39,7 +39,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 현재 임베디드 원본 정의에는 **파라미터 184개**와 **차량 문서 이름 329개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
-데모는 `carrot-wip` 커밋 `962d4484e737bcc98fcbffdfdfd1697600685962`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
+데모는 `carrot-wip` 커밋 `70b1f568cb33ef3c5fa5ada235a177ba39807b65`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
 
 ## 개인정보와 라이선스
 
@@ -78,7 +78,7 @@ On a phone, browser Back closes vehicle and value dialogs first, then walks back
 
 The current published demo is v1.0.5, based on official carrot-wip.
 
-- The current demo is **v1.0.5**. Its settings follow ajouatom/openpilot carrot-wip commit [962d448](https://github.com/ajouatom/openpilot/commit/962d4484e737bcc98fcbffdfdfd1697600685962).
+- The current demo is **v1.0.5**. Its settings follow ajouatom/openpilot carrot-wip commit [70b1f56](https://github.com/ajouatom/openpilot/commit/70b1f568cb33ef3c5fa5ada235a177ba39807b65).
 - This update keeps the menu and all 184 parameters, and syncs the VEgoStopping minimum (1→10) and its Korean, English and Chinese descriptions, plus the MyDrivingModeAuto descriptions in those languages.
 - When opened with an internet connection, the demo checks the latest stable GitHub Release in the background. Open **도구 → 데모 업데이트** (Tools → Demo update) to see the current/latest versions and status or check manually. An **업데이트하기** (Update) button appears when a newer stable version is available.
 - On the hosted web demo, the update flow temporarily saves the current backup in browser storage, opens the new version and restores the backup. For important settings, export a JSON backup first as well.
@@ -90,7 +90,7 @@ The current published demo is v1.0.5, based on official carrot-wip.
 
 The embedded upstream definitions currently include **184 parameters** and **329 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
-This demo references the UI and settings structure from `carrot-wip` commit `962d4484e737bcc98fcbffdfdfd1697600685962`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
+This demo references the UI and settings structure from `carrot-wip` commit `70b1f568cb33ef3c5fa5ada235a177ba39807b65`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
 
 ### Privacy and license
 
