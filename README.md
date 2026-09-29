@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.6 | WebCarrot Offline Settings Demo v1.0.6
+# WebCarrot 오프라인 설정 데모 v1.0.7 | WebCarrot Offline Settings Demo v1.0.7
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -25,10 +25,11 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
-현재 정식 데모는 공식 carrot-wip 기준 v1.0.6입니다.
+현재 정식 데모는 공식 carrot-wip 기준 v1.0.7입니다.
 
-- 현재 버전은 **v1.0.6**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [123db00](https://github.com/ajouatom/openpilot/commit/123db00c1dfc210caa7939912f9bc342a3f5c146)입니다.
-- 이번 갱신은 운전자 감시 메뉴의 `DisableDM`을 `DriverMonitoringMode`와 `CarrotVisionEnabled`로 교체했습니다. 새 선택지와 최신 한·영·중 설명을 반영하고, 실험 모드를 켤 때 원본의 확인 문구를 표시합니다. 기존 백업의 `DisableDM` 값은 삭제하지 않고 내보낼 때 보존합니다.
+- 현재 버전은 **v1.0.7**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [123db00](https://github.com/ajouatom/openpilot/commit/123db00c1dfc210caa7939912f9bc342a3f5c146)입니다.
+- 이번 갱신은 검색 중 검색창을 다시 만들지 않고 결과 목록만 갱신해 휴대폰 한글 조합 입력이 끊기는 문제를 수정했습니다.
+- v1.0.6에서는 운전자 감시 메뉴의 `DisableDM`을 `DriverMonitoringMode`와 `CarrotVisionEnabled`로 교체했습니다. 기존 백업의 `DisableDM` 값은 내보낼 때 보존합니다.
 - 인터넷에 연결된 상태로 데모를 실행하면 최신 정식 Release를 백그라운드에서 확인합니다. **도구 → 데모 업데이트**에서 현재/최신 버전과 상태를 확인하거나 수동으로 다시 확인할 수 있습니다. 새 버전이 있을 때 **업데이트하기**가 나타납니다.
 - 웹 데모에서는 업데이트 전에 현재 백업을 브라우저에 임시 보관하고 새 버전을 연 뒤 복원합니다. 업데이트 과정의 문제에 대비해 중요한 값은 먼저 JSON 파일로도 내보내 두세요.
 - 다운로드한 HTML은 자기 파일을 직접 덮어쓸 수 없습니다. 업데이트 화면에서 **현재 설정 JSON 백업**을 저장하고, 새 HTML을 내려받아 연 뒤 백업을 다시 불러오세요.
@@ -76,10 +77,11 @@ On a phone, browser Back closes vehicle and value dialogs first, then walks back
 
 ### Updates
 
-The current published demo is v1.0.6, based on official carrot-wip.
+The current published demo is v1.0.7, based on official carrot-wip.
 
-- The current demo is **v1.0.6**. Its settings follow ajouatom/openpilot carrot-wip commit [123db00](https://github.com/ajouatom/openpilot/commit/123db00c1dfc210caa7939912f9bc342a3f5c146).
-- This update replaces `DisableDM` in the driver monitoring menu with `DriverMonitoringMode` and `CarrotVisionEnabled`, including the new choices and full Korean, English and Chinese descriptions. It asks for confirmation before enabling experimental mode. Imported `DisableDM` values remain in exported backups.
+- The current demo is **v1.0.7**. Its settings follow ajouatom/openpilot carrot-wip commit [123db00](https://github.com/ajouatom/openpilot/commit/123db00c1dfc210caa7939912f9bc342a3f5c146).
+- This update keeps the search input in place while refreshing only the results, fixing interrupted Korean text composition on phones.
+- v1.0.6 replaced `DisableDM` in the driver monitoring menu with `DriverMonitoringMode` and `CarrotVisionEnabled`. Imported `DisableDM` values remain in exported backups.
 - When opened with an internet connection, the demo checks the latest stable GitHub Release in the background. Open **도구 → 데모 업데이트** (Tools → Demo update) to see the current/latest versions and status or check manually. An **업데이트하기** (Update) button appears when a newer stable version is available.
 - On the hosted web demo, the update flow temporarily saves the current backup in browser storage, opens the new version and restores the backup. For important settings, export a JSON backup first as well.
 - A downloaded HTML file cannot overwrite itself. Use the update dialog to save a JSON backup, download and open the new HTML, then import the backup.
