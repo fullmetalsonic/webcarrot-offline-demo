@@ -5,7 +5,7 @@
 - Repository: fullmetalsonic/webcarrot-offline-demo (public).
 - Pages source: main branch, repository root.
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
-- Current published version: 1.0.6. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 123db00c1dfc210caa7939912f9bc342a3f5c146 (185 parameters; PaddleMode max=3).
+- Current published version: 1.0.7. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 123db00c1dfc210caa7939912f9bc342a3f5c146 (185 parameters; PaddleMode max=3).
 - Source schema and vehicle catalog are embedded; no runtime device connection.
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
 - Published v1.0.1 on 2026-09-24. Pages built successfully; the latest stable Release API returned HTTP 200 with CORS allowed and `v1.0.1`.
@@ -65,3 +65,10 @@ Only the demo, public documentation and source license notices belong here. Neve
 - Imported DisableDM and other unsupported keys, and unedited values, remain in exported backup JSON. Demo code commit: e319d4f8000e01b574af956d2898fee837327844.
 - Pages build succeeded. Local index.html, served Pages HTML and downloaded v1.0.6 Release asset webcarrot-offline-demo.html share SHA-256 A6513AB0AC59F9522C50C1D018006A0832F93964C7B20BCCA6B629FE6E7E1172. Latest stable Release API returned v1.0.6 with CORS allowed.
 - Exact source/schema/menu equality, JavaScript syntax, git diff --check and focused confirmation/backup preservation checks passed. Rendered visual and physical phone validation remain unrun.
+
+## Published v1.0.7 Korean search input fix (2026-09-29)
+
+- User screenshot from Samsung Browser showed decomposed Hangul while typing in settings search. Each input event previously called render(), replacing the focused search element and interrupting IME composition.
+- Search now keeps the input element in place and refreshes only the result container, count and page title. The embedded 185-parameter schema and backup import/export behavior are unchanged. Demo code commit: edfc8bf340a28ea86b8d5bf1e5d803d046c05059.
+- JavaScript syntax, git diff --check, unchanged schema and focused DOM structure inspection passed. General ADB listed no device; RoamADB did not respond during this run, so physical Samsung Browser composition remains unverified.
+- Pages build succeeded. Local index.html, served Pages HTML and downloaded v1.0.7 Release asset webcarrot-offline-demo.html share SHA-256 C4147CF123C1AE32756E609BCF82EAA05EFBAC5ADF1B1FFCC0F56EA0BC0599EB. Latest stable Release API returned v1.0.7 with CORS allowed.
