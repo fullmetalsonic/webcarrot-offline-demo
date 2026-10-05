@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.7 | WebCarrot Offline Settings Demo v1.0.7
+# WebCarrot 오프라인 설정 데모 v1.0.8 | WebCarrot Offline Settings Demo v1.0.8
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -22,13 +22,16 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 - 일부 백업은 이진 설정값을 문자열 `"True"`/`"False"`로 저장합니다. 데모 메뉴에 정의된 `min=0, max=1` 파라미터라면 화면에서 `1`/`0`으로 해석해 맞는 토글·선택 상태를 보여줍니다. 사용자가 바꾸기 전에는 원래 문자열을 그대로 내보내며, 편집한 뒤 해당 키만 숫자 문자열 `"0"`/`"1"`로 저장합니다. 현재 메뉴에 정의되지 않은 키의 값은 표시용 변환 없이 원본 그대로 보존합니다.
 - 내장 차량 목록은 원본의 차량 정의를 바탕으로 합니다. 기기별 추가 차량은 목록에 없을 수 있습니다. 기존 백업에 있는 그런 값도 그대로 보존됩니다.
 - 콤마 서버에서 받는 실제 차종별 인기값은 데모가 알 수 없어 표시하지 않습니다. 오프라인 안내로 구분합니다.
+- 차량별 숨김 조건은 공식 서버의 `CarName` 대체 판정과 같이 백업의 `CarName`이 HYUNDAI·KIA·GENESIS로 시작하면 현대 계열에 숨겨진 종방향 튜닝 3개를 목록·검색에서 제외합니다. 데모의 차량 선택값 `CarSelected3`만 바꾸면 이 판정은 바뀌지 않습니다. 실제 기기의 바이너리 `CarParamsPersistent` 브랜드 판정은 제공하지 않습니다.
+- ONNX 차선·BSD의 세부값 5개는 원본 `detail_parent` 관계에 따라 **상세 설정**에서 열며, 일반 목록과 설정 개수에는 포함하지 않습니다.
 
 ## 업데이트
 
-현재 정식 데모는 공식 carrot-wip 기준 v1.0.7입니다.
+현재 정식 데모는 공식 carrot-wip 기준 v1.0.8입니다.
 
-- 현재 버전은 **v1.0.7**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [123db00](https://github.com/ajouatom/openpilot/commit/123db00c1dfc210caa7939912f9bc342a3f5c146)입니다.
-- 이번 갱신은 검색 중 검색창을 다시 만들지 않고 결과 목록만 갱신해 휴대폰 한글 조합 입력이 끊기는 문제를 수정했습니다.
+- 현재 버전은 **v1.0.8**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [7432ac9b](https://github.com/ajouatom/openpilot/commit/7432ac9b5c0cac7b92fdf8393c5dda4d2de9a99b)입니다.
+- 이번 갱신은 공식 설정 187개를 반영했습니다. `DriverMonitoringEnabled`는 원본처럼 검색으로만 찾는 예외 설정이며, `HyundaiCanfdClusterDirectTx`는 CANFD·HDA 그룹에 추가했습니다. 운전자 감시·CarrotVision·차선 사용 속도·레이더·음량 설명과 선택지 표시, 좁은 화면의 컨트롤 배치도 원본 변경에 맞췄습니다.
+- v1.0.7의 검색창 유지 방식은 보존해 한글 조합 중 입력창을 다시 만들지 않습니다.
 - v1.0.6에서는 운전자 감시 메뉴의 `DisableDM`을 `DriverMonitoringMode`와 `CarrotVisionEnabled`로 교체했습니다. 기존 백업의 `DisableDM` 값은 내보낼 때 보존합니다.
 - 인터넷에 연결된 상태로 데모를 실행하면 최신 정식 Release를 백그라운드에서 확인합니다. **도구 → 데모 업데이트**에서 현재/최신 버전과 상태를 확인하거나 수동으로 다시 확인할 수 있습니다. 새 버전이 있을 때 **업데이트하기**가 나타납니다.
 - 웹 데모에서는 업데이트 전에 현재 백업을 브라우저에 임시 보관하고 새 버전을 연 뒤 복원합니다. 업데이트 과정의 문제에 대비해 중요한 값은 먼저 JSON 파일로도 내보내 두세요.
@@ -38,9 +41,9 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 데모의 범위
 
-현재 임베디드 원본 정의에는 **파라미터 185개**와 **차량 문서 이름 329개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
+현재 임베디드 원본 정의에는 **파라미터 187개**와 **차량 문서 이름 329개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
-데모는 `carrot-wip` 커밋 `123db00c1dfc210caa7939912f9bc342a3f5c146`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
+데모는 `carrot-wip` 커밋 `7432ac9b5c0cac7b92fdf8393c5dda4d2de9a99b`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
 
 ## 개인정보와 라이선스
 
@@ -75,12 +78,15 @@ On a phone, browser Back closes vehicle and value dialogs first, then walks back
 - The embedded vehicle catalog is based on upstream vehicle definitions. A device may include additional vehicles that are absent from this catalog; existing backup values for those vehicles are preserved.
 - Per-vehicle popular values come from the Comma server and are unavailable offline, so the demo labels them as unavailable instead of inventing statistics.
 
+Brand visibility follows the official server's `CarName` fallback: a backed-up `CarName` beginning with HYUNDAI, KIA or GENESIS hides the three Hyundai-restricted longitudinal tuning settings from browsing and search. Changing `CarSelected3` alone does not change this test. Binary `CarParamsPersistent` brand detection is not available. The five ONNX lane/BSD detail values open through **상세 설정** (Details), following `detail_parent`, and are excluded from ordinary rows and counts.
+
 ### Updates
 
-The current published demo is v1.0.7, based on official carrot-wip.
+The current published demo is v1.0.8, based on official carrot-wip.
 
-- The current demo is **v1.0.7**. Its settings follow ajouatom/openpilot carrot-wip commit [123db00](https://github.com/ajouatom/openpilot/commit/123db00c1dfc210caa7939912f9bc342a3f5c146).
-- This update keeps the search input in place while refreshing only the results, fixing interrupted Korean text composition on phones.
+- The current demo is **v1.0.8**. Its settings follow ajouatom/openpilot carrot-wip commit [7432ac9b](https://github.com/ajouatom/openpilot/commit/7432ac9b5c0cac7b92fdf8393c5dda4d2de9a99b).
+- This update includes all 187 official settings. `DriverMonitoringEnabled` is an exception available only through search, as in upstream; `HyundaiCanfdClusterDirectTx` is added to CANFD·HDA. It also updates driver-monitoring, CarrotVision, lane-speed, radar and volume descriptions, named choices, and control placement in narrow settings panes.
+- The v1.0.7 search behavior is preserved: the input stays mounted during Korean text composition.
 - v1.0.6 replaced `DisableDM` in the driver monitoring menu with `DriverMonitoringMode` and `CarrotVisionEnabled`. Imported `DisableDM` values remain in exported backups.
 - When opened with an internet connection, the demo checks the latest stable GitHub Release in the background. Open **도구 → 데모 업데이트** (Tools → Demo update) to see the current/latest versions and status or check manually. An **업데이트하기** (Update) button appears when a newer stable version is available.
 - On the hosted web demo, the update flow temporarily saves the current backup in browser storage, opens the new version and restores the backup. For important settings, export a JSON backup first as well.
@@ -90,9 +96,9 @@ The current published demo is v1.0.7, based on official carrot-wip.
 
 ### Scope
 
-The embedded upstream definitions currently include **185 parameters** and **329 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
+The embedded upstream definitions currently include **187 parameters** and **329 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
-This demo references the UI and settings structure from `carrot-wip` commit `123db00c1dfc210caa7939912f9bc342a3f5c146`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
+This demo references the UI and settings structure from `carrot-wip` commit `7432ac9b5c0cac7b92fdf8393c5dda4d2de9a99b`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
 
 ### Privacy and license
 
