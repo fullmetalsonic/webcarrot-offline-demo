@@ -5,7 +5,7 @@
 - Repository: fullmetalsonic/webcarrot-offline-demo (public).
 - Pages source: main branch, repository root.
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
-- Current published version: 1.0.7. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 123db00c1dfc210caa7939912f9bc342a3f5c146 (185 parameters; PaddleMode max=3).
+- Current published version: 1.0.9. Settings/menu source: official ajouatom/openpilot:carrot-wip commit e6a6284437a76c2d60bda75efa4cb2cf6e85ef07 (187 parameters; PaddleMode max=3).
 - Source schema and vehicle catalog are embedded; no runtime device connection.
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
 - Published v1.0.1 on 2026-09-24. Pages built successfully; the latest stable Release API returned HTTP 200 with CORS allowed and `v1.0.1`.
@@ -29,6 +29,8 @@
 ## Known validation limit
 
 No local URL/browser workaround is allowed by the user's instructions. The current delivery has not passed rendered screenshot parity or phone interaction validation. Do not label these as passed based on source inspection.
+
+Brand visibility follows the official server's CarName fallback. The demo does not decode binary CarParamsPersistent.brand, and CarSelected3 alone does not override the brand filter. This offline limitation is documented in both README languages.
 
 ## Publication contents
 
@@ -72,3 +74,17 @@ Only the demo, public documentation and source license notices belong here. Neve
 - Search now keeps the input element in place and refreshes only the result container, count and page title. The embedded 185-parameter schema and backup import/export behavior are unchanged. Demo code commit: edfc8bf340a28ea86b8d5bf1e5d803d046c05059.
 - JavaScript syntax, git diff --check, unchanged schema and focused DOM structure inspection passed. General ADB listed no device; RoamADB did not respond during this run, so physical Samsung Browser composition remains unverified.
 - Pages build succeeded. Local index.html, served Pages HTML and downloaded v1.0.7 Release asset webcarrot-offline-demo.html share SHA-256 C4147CF123C1AE32756E609BCF82EAA05EFBAC5ADF1B1FFCC0F56EA0BC0599EB. Latest stable Release API returned v1.0.7 with CORS allowed.
+
+## Published v1.0.8 official settings and renderer update (2026-10-05)
+
+- Source: official ajouatom/openpilot:carrot-wip 7432ac9b5c0cac7b92fdf8393c5dda4d2de9a99b. Complete embedded schema/menu matches upstream, with 187 parameters. Added DriverMonitoringEnabled (search only) and HyundaiCanfdClusterDirectTx (CANFD·HDA). Updated DriverMonitoringMode, CarrotVisionEnabled, UseLaneLineSpeed, EnableRadarTracks and SoundVolumeAdjust descriptions.
+- Matched search-only filtering, named choices, default metadata, narrow-pane control placement, hidden_brands through CarName, and detail_parent navigation for the five ONNX child settings under ShareData. Browser Back includes the detail stage. Official PaddleMode max=3 and VEgoStopping min=10 remain; no personal fork patches were included.
+- Focused VM checks passed: exact full schema/menu equality, normal/search/detail visibility and counts, all parameter description rendering, option labels, unknown/nested values and unedited True/False backup preservation. JavaScript syntax and git diff --check passed. The mounted Korean search input and backup functions were preserved.
+- Code commit: e90e990c54b8e43b2aed9517f9fb096e250951a3. Pages and downloaded Release asset match local HTML: SHA-256 9F90DE5231115A131AF87733B3D0AB52CF8EDE13B5EC1B6AE6E353D8D1AB0E2C (261335 bytes). Latest stable Release API/CORS passed at publication. Rendered visual and physical phone checks remain unrun.
+
+## Published v1.0.9 latest official descriptions (2026-10-05)
+
+- Official HEAD advanced during publication to e6a6284437a76c2d60bda75efa4cb2cf6e85ef07. LeadAccelResponse and LeadAccelResponseTF1 through TF4 changed their Korean/English/Chinese descriptions (15 fields). Extra headroom is held to 1.2 times TF distance, gradually released between 1.2 and 1.5 times, and recovered at or above 1.5 times regardless of lead speed. Count, hierarchy/order, ranges/defaults, input controls and visibility are unchanged from v1.0.8.
+- Exact complete source/schema equality, only the intended 15 description-field changes, JavaScript syntax and git diff --check passed. UI and import/export code are unchanged from v1.0.8; its focused checks were reused rather than repeated. No physical phone or rendered screenshot parity check was performed.
+- Code commit: 3802787f5605d9999dc9cbf1934f5be421b50814. Pages build succeeded. Local HTML, public Pages HTTP 200 response and downloaded Release asset webcarrot-offline-demo.html share SHA-256 C812FC56E629B47BE7D8AB6353589C3AA4AEF6A573582BAF94C252B48B63B0C1 (266275 bytes). Public latest Release API returned v1.0.9, draft=false, prerelease=false, with CORS allowed.
+- Source verification used current official files. OpenPilot code, fork branches and other automations were untouched.
