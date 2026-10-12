@@ -5,7 +5,7 @@
 - Repository: fullmetalsonic/webcarrot-offline-demo (public).
 - Pages source: main branch, repository root.
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
-- Current published version: 1.0.9. Settings/menu source: official ajouatom/openpilot:carrot-wip commit e6a6284437a76c2d60bda75efa4cb2cf6e85ef07 (187 parameters; PaddleMode max=3).
+- Current published version: 1.0.10. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 3f537bc13fdc325f4ef3852f8ab5a762566cefc1 (184 parameters; 333 vehicle document names; PaddleMode max=3).
 - Source schema and vehicle catalog are embedded; no runtime device connection.
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
 - Published v1.0.1 on 2026-09-24. Pages built successfully; the latest stable Release API returned HTTP 200 with CORS allowed and `v1.0.1`.
@@ -30,7 +30,7 @@
 
 No local URL/browser workaround is allowed by the user's instructions. The current delivery has not passed rendered screenshot parity or phone interaction validation. Do not label these as passed based on source inspection.
 
-Brand visibility follows the official server's CarName fallback. The demo does not decode binary CarParamsPersistent.brand, and CarSelected3 alone does not override the brand filter. This offline limitation is documented in both README languages.
+Brand visibility follows the official server's Hyundai CarName fallback. The demo does not decode binary CarParamsPersistent.brand, and CarSelected3 alone does not override the brand filter. Toyota/Lexus restrictions are embedded but require the unavailable binary brand path; the demo does not invent a Toyota CarName fallback. This offline limitation is documented in both README languages.
 
 ## Publication contents
 
@@ -88,3 +88,13 @@ Only the demo, public documentation and source license notices belong here. Neve
 - Exact complete source/schema equality, only the intended 15 description-field changes, JavaScript syntax and git diff --check passed. UI and import/export code are unchanged from v1.0.8; its focused checks were reused rather than repeated. No physical phone or rendered screenshot parity check was performed.
 - Code commit: 3802787f5605d9999dc9cbf1934f5be421b50814. Pages build succeeded. Local HTML, public Pages HTTP 200 response and downloaded Release asset webcarrot-offline-demo.html share SHA-256 C812FC56E629B47BE7D8AB6353589C3AA4AEF6A573582BAF94C252B48B63B0C1 (266275 bytes). Public latest Release API returned v1.0.9, draft=false, prerelease=false, with CORS allowed.
 - Source verification used current official files. OpenPilot code, fork branches and other automations were untouched.
+
+## Published v1.0.10 weekly official settings, search and catalog sync (2026-10-12)
+
+- Official current remote HEAD was rechecked at 3f537bc13fdc325f4ef3852f8ab5a762566cefc1. The complete schema/menu matches the pinned source with 184 parameters. CarrotYouTubeLive, CarrotYouTubeQuality and CarrotYouTubeTimestamp were removed from the menu; imported copies of these keys remain in exported backups.
+- Twelve existing definitions changed across 43 fields: LongTuningKpV/Kf/KiV, AlwaysLateral, SpeedFromPCM, ShareData, OnnxLaneThreshold, OnnxBsdThreshold, OnnxBsdSmoothingMs, StoppingAccel, ShowModelView and ClusterHud. Updated descriptions, Hyundai/Toyota hidden_brands, ONNX minimum/step/default metadata, and the C4 layout title/options/select control. The offline binary-brand limitation above remains.
+- Compared setting.js, derived_model.js, search entries.js/match.js, setting styles, params.py/settings.py and car.js/cars.py. Included the official NFC-normalized initial-consonant, multiple-keyword AND and whitespace-free matcher while keeping the focused search input mounted. Select labels wrap and avoid duplicated value prefixes.
+- The supported vehicle definition files and server catalog source are unchanged from the prior baseline. A direct reconstruction found four previously omitted Tesla Model 3/Y HW3/HW4 entries. Restored these exact official names; all 333 names, manufacturer groups and sorting match the official catalog. Model X remains listed with the existing forced-selection exclusion notice, consistent with selected_car.py; Model 3/Y are forced-selectable.
+- Focused validation PASS: full schema/menu equality, JavaScript syntax, git diff --check, C4 selection/editing, ONNX min=0/step=1/BSD default=94 editing, search-only/detail/Hyundai fallback visibility, NFC/NFD/initial-consonant/AND/whitespace-free search and input object persistence. ImportBackup through exportBackup Blob JSON preserves removed keys, unsupported/nested values and types; explicit editing changes only the edited key. All five Tesla selections through commitCar and export preserve the exact CarSelected3 and unknown values. No product verification failures occurred. Rendered browser/visual parity and physical phone interaction were not executed.
+- Code commit: e6ee54fa873f09918344a49df2a024b70a5e267f. Pages built successfully and returned HTTP 200. Local index.html, served Pages HTML and downloaded v1.0.10 Release asset webcarrot-offline-demo.html share SHA-256 F2C3E4CFE0DE2694669AC634C0BF03DC6A72D3C6540E4283AFD2B69A917DC06C (275431 bytes). Latest stable Release API returned v1.0.10 with draft=false, prerelease=false and CORS allowed.
+- Only this demo and its public documentation were changed. OpenPilot source, fork branches, vehicle code and unrelated automations were untouched.
