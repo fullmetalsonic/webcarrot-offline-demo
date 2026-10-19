@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.10 | WebCarrot Offline Settings Demo v1.0.10
+# WebCarrot 오프라인 설정 데모 v1.0.11 | WebCarrot Offline Settings Demo v1.0.11
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -27,10 +27,10 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
-현재 정식 데모는 공식 carrot-wip 기준 v1.0.10입니다.
+현재 정식 데모는 공식 carrot-wip 기준 v1.0.11입니다.
 
-- 현재 버전은 **v1.0.10**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [3f537bc1](https://github.com/ajouatom/openpilot/commit/3f537bc13fdc325f4ef3852f8ab5a762566cefc1)입니다.
-- 이번 갱신은 YouTube 라이브 설정 3개를 화면에서 제거하고 공식 설정 184개를 반영했습니다. 삭제된 키도 가져온 백업에서는 보존합니다. ONNX 신뢰도 최소값·변경 단위와 BSD 기본값, 주행화면 구성(C4)의 이름·선택 메뉴, 종방향 튜닝 3개의 토요타·렉서스 숨김 조건 및 관련 설명을 갱신했습니다. 공식 초성·여러 단어·공백 없이 검색도 반영했습니다.
+- 현재 버전은 **v1.0.11**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [2cd1d797](https://github.com/ajouatom/openpilot/commit/2cd1d7978d9979bd5ace8d730870cc29dbe608b3)입니다.
+- 이번 갱신은 공식 설정 12개를 추가해 총 196개를 반영했습니다. 차선변경 레버·신호보조·앞차 브레이크등 관찰·순정 내비 감속 중지와 구간 평균속도 설정을 해당 메뉴에, NNFF 토크 제어는 원본처럼 검색에만 표시합니다. 내비 감속 중지의 세부 항목은 **상세 설정**에서 엽니다. 레이더·추종 반응·내비 감속·HUD의 공식 설명도 갱신했습니다. 가져온 백업의 미편집 값과 목록 밖 키는 그대로 보존합니다.
 - 기존 데모 차량 목록에서 누락됐던 Tesla Model 3·Model Y의 HW3/HW4 문서 이름 4개를 복구해 공식 목록 333개와 맞췄습니다. 이번 업스트림에 새로 추가된 차종은 아닙니다.
 - v1.0.7의 검색창 유지 방식은 보존해 한글 조합 중 입력창을 다시 만들지 않습니다.
 - v1.0.6에서는 운전자 감시 메뉴의 `DisableDM`을 `DriverMonitoringMode`와 `CarrotVisionEnabled`로 교체했습니다. 기존 백업의 `DisableDM` 값은 내보낼 때 보존합니다.
@@ -42,9 +42,9 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 데모의 범위
 
-현재 임베디드 원본 정의에는 **파라미터 184개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
+현재 임베디드 원본 정의에는 **파라미터 196개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
-데모는 `carrot-wip` 커밋 `3f537bc13fdc325f4ef3852f8ab5a762566cefc1`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
+데모는 `carrot-wip` 커밋 `2cd1d7978d9979bd5ace8d730870cc29dbe608b3`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
 
 ## 개인정보와 라이선스
 
@@ -83,10 +83,10 @@ Brand visibility follows the official server's `CarName` fallback: a backed-up `
 
 ### Updates
 
-The current published demo is v1.0.10, based on official carrot-wip.
+The current published demo is v1.0.11, based on official carrot-wip.
 
-- The current demo is **v1.0.10**. Its settings follow ajouatom/openpilot carrot-wip commit [3f537bc1](https://github.com/ajouatom/openpilot/commit/3f537bc13fdc325f4ef3852f8ab5a762566cefc1).
-- This update removes three YouTube Live controls from the UI and includes all 184 official settings. Removed keys remain in imported backups. It updates ONNX confidence limits and steps, the BSD default, the Driving Screen Layout (C4) title and selection control, Toyota/Lexus visibility restrictions for three longitudinal tuning settings, and related descriptions. Official Korean initial-consonant, multiple-keyword and whitespace-free search behavior is included.
+- The current demo is **v1.0.11**. Its settings follow ajouatom/openpilot carrot-wip commit [2cd1d797](https://github.com/ajouatom/openpilot/commit/2cd1d7978d9979bd5ace8d730870cc29dbe608b3).
+- This update adds 12 official parameters for a total of 196. The corresponding menus include lever-based lane-change behavior, signal assistance, lead brake-lamp observation, stock-navigation deceleration cancellation and section average-speed control. NNFF torque control appears only in search, matching upstream; cancellation subcontrols open through **상세 설정** (Details). Official radar, following-response, navigation-deceleration and HUD descriptions are also updated. Unedited imported values and unsupported keys remain preserved.
 - Four previously omitted Tesla Model 3/Model Y HW3/HW4 document names are restored, matching the 333-name official catalog. These are corrections to the existing demo, not newly added upstream vehicles.
 - The v1.0.7 search behavior is preserved: the input stays mounted during Korean text composition.
 - v1.0.6 replaced `DisableDM` in the driver monitoring menu with `DriverMonitoringMode` and `CarrotVisionEnabled`. Imported `DisableDM` values remain in exported backups.
@@ -98,9 +98,9 @@ The current published demo is v1.0.10, based on official carrot-wip.
 
 ### Scope
 
-The embedded upstream definitions currently include **184 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
+The embedded upstream definitions currently include **196 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
-This demo references the UI and settings structure from `carrot-wip` commit `3f537bc13fdc325f4ef3852f8ab5a762566cefc1`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
+This demo references the UI and settings structure from `carrot-wip` commit `2cd1d7978d9979bd5ace8d730870cc29dbe608b3`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
 
 ### Privacy and license
 
