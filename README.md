@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.11 | WebCarrot Offline Settings Demo v1.0.11
+# WebCarrot 오프라인 설정 데모 v1.0.12 | WebCarrot Offline Settings Demo v1.0.12
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -23,14 +23,14 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 - 내장 차량 목록은 원본의 차량 정의를 바탕으로 합니다. 기기별 추가 차량은 목록에 없을 수 있습니다. 기존 백업에 있는 그런 값도 그대로 보존됩니다.
 - 콤마 서버에서 받는 실제 차종별 인기값은 데모가 알 수 없어 표시하지 않습니다. 오프라인 안내로 구분합니다.
 - 차량별 숨김 조건은 공식 서버의 `CarName` 대체 판정과 같이 백업의 `CarName`이 HYUNDAI·KIA·GENESIS로 시작하면 현대 계열에 숨겨진 종방향 튜닝 3개를 목록·검색에서 제외합니다. 데모의 차량 선택값 `CarSelected3`만 바꾸면 이 판정은 바뀌지 않습니다. 실제 기기의 바이너리 `CarParamsPersistent` 브랜드 판정은 제공하지 않습니다. 토요타 브랜드의 숨김 정의도 포함하지만, 공식 서버처럼 바이너리 브랜드를 판독하지 못하므로 `CarName`만으로 토요타·렉서스를 추정해 숨기지는 않습니다.
-- ONNX 차선·BSD의 세부값 5개는 원본 `detail_parent` 관계에 따라 **상세 설정**에서 열며, 일반 목록과 설정 개수에는 포함하지 않습니다.
+- ONNX 차선·BSD의 세부값 6개는 원본 `detail_parent` 관계에 따라 **상세 설정**에서 열며, 일반 목록과 설정 개수에는 포함하지 않습니다.
 
 ## 업데이트
 
-현재 정식 데모는 공식 carrot-wip 기준 v1.0.11입니다.
+현재 정식 데모는 공식 carrot-wip 기준 v1.0.12입니다.
 
-- 현재 버전은 **v1.0.11**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [2cd1d797](https://github.com/ajouatom/openpilot/commit/2cd1d7978d9979bd5ace8d730870cc29dbe608b3)입니다.
-- 이번 갱신은 공식 설정 12개를 추가해 총 196개를 반영했습니다. 차선변경 레버·신호보조·앞차 브레이크등 관찰·순정 내비 감속 중지와 구간 평균속도 설정을 해당 메뉴에, NNFF 토크 제어는 원본처럼 검색에만 표시합니다. 내비 감속 중지의 세부 항목은 **상세 설정**에서 엽니다. 레이더·추종 반응·내비 감속·HUD의 공식 설명도 갱신했습니다. 가져온 백업의 미편집 값과 목록 밖 키는 그대로 보존합니다.
+- 현재 버전은 **v1.0.12**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [05c16780](https://github.com/ajouatom/openpilot/commit/05c1678033c1c778f0386fba00c1e105bb26c427)입니다.
+- 이번 갱신은 기본값이 꺼짐인 `OnnxBsdEnabled`(ONNX 시각 BSD)를 추가해 공식 설정 197개를 반영했습니다. **ONNX 차선·BSD → 상세 설정**에서 켜고 끌 수 있으며 일반 목록에는 표시하지 않습니다. `ShareData`, `SignalAssistMode`, `ClusterHud`, `ClusterHudEncoder`의 한국어·영어·중국어 설명도 갱신했습니다. 가져온 백업의 미편집 값과 목록 밖 키는 그대로 보존합니다.
 - 기존 데모 차량 목록에서 누락됐던 Tesla Model 3·Model Y의 HW3/HW4 문서 이름 4개를 복구해 공식 목록 333개와 맞췄습니다. 이번 업스트림에 새로 추가된 차종은 아닙니다.
 - v1.0.7의 검색창 유지 방식은 보존해 한글 조합 중 입력창을 다시 만들지 않습니다.
 - v1.0.6에서는 운전자 감시 메뉴의 `DisableDM`을 `DriverMonitoringMode`와 `CarrotVisionEnabled`로 교체했습니다. 기존 백업의 `DisableDM` 값은 내보낼 때 보존합니다.
@@ -42,9 +42,9 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 데모의 범위
 
-현재 임베디드 원본 정의에는 **파라미터 196개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
+현재 임베디드 원본 정의에는 **파라미터 197개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
-데모는 `carrot-wip` 커밋 `2cd1d7978d9979bd5ace8d730870cc29dbe608b3`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
+데모는 `carrot-wip` 커밋 `05c1678033c1c778f0386fba00c1e105bb26c427`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
 
 ## 개인정보와 라이선스
 
@@ -79,14 +79,14 @@ On a phone, browser Back closes vehicle and value dialogs first, then walks back
 - The embedded vehicle catalog is based on upstream vehicle definitions. A device may include additional vehicles that are absent from this catalog; existing backup values for those vehicles are preserved.
 - Per-vehicle popular values come from the Comma server and are unavailable offline, so the demo labels them as unavailable instead of inventing statistics.
 
-Brand visibility follows the official server's `CarName` fallback: a backed-up `CarName` beginning with HYUNDAI, KIA or GENESIS hides the three Hyundai-restricted longitudinal tuning settings from browsing and search. Changing `CarSelected3` alone does not change this test. Binary `CarParamsPersistent` brand detection is not available. Toyota restrictions are included in the schema, but the demo does not infer Toyota/Lexus from `CarName` to hide them because the official server requires the binary brand for that case. The five ONNX lane/BSD detail values open through **상세 설정** (Details), following `detail_parent`, and are excluded from ordinary rows and counts.
+Brand visibility follows the official server's `CarName` fallback: a backed-up `CarName` beginning with HYUNDAI, KIA or GENESIS hides the three Hyundai-restricted longitudinal tuning settings from browsing and search. Changing `CarSelected3` alone does not change this test. Binary `CarParamsPersistent` brand detection is not available. Toyota restrictions are included in the schema, but the demo does not infer Toyota/Lexus from `CarName` to hide them because the official server requires the binary brand for that case. The six ONNX lane/BSD detail values open through **상세 설정** (Details), following `detail_parent`, and are excluded from ordinary rows and counts.
 
 ### Updates
 
-The current published demo is v1.0.11, based on official carrot-wip.
+The current published demo is v1.0.12, based on official carrot-wip.
 
-- The current demo is **v1.0.11**. Its settings follow ajouatom/openpilot carrot-wip commit [2cd1d797](https://github.com/ajouatom/openpilot/commit/2cd1d7978d9979bd5ace8d730870cc29dbe608b3).
-- This update adds 12 official parameters for a total of 196. The corresponding menus include lever-based lane-change behavior, signal assistance, lead brake-lamp observation, stock-navigation deceleration cancellation and section average-speed control. NNFF torque control appears only in search, matching upstream; cancellation subcontrols open through **상세 설정** (Details). Official radar, following-response, navigation-deceleration and HUD descriptions are also updated. Unedited imported values and unsupported keys remain preserved.
+- The current demo is **v1.0.12**. Its settings follow ajouatom/openpilot carrot-wip commit [05c16780](https://github.com/ajouatom/openpilot/commit/05c1678033c1c778f0386fba00c1e105bb26c427).
+- This update adds the default-off `OnnxBsdEnabled` (ONNX Vision BSD) toggle for a total of 197 official parameters. It is available under **ONNX lane/BSD → 상세 설정** (Details) and is excluded from ordinary rows. Korean, English and Chinese descriptions for `ShareData`, `SignalAssistMode`, `ClusterHud` and `ClusterHudEncoder` are also updated. Unedited imported values and unsupported keys remain preserved.
 - Four previously omitted Tesla Model 3/Model Y HW3/HW4 document names are restored, matching the 333-name official catalog. These are corrections to the existing demo, not newly added upstream vehicles.
 - The v1.0.7 search behavior is preserved: the input stays mounted during Korean text composition.
 - v1.0.6 replaced `DisableDM` in the driver monitoring menu with `DriverMonitoringMode` and `CarrotVisionEnabled`. Imported `DisableDM` values remain in exported backups.
@@ -98,9 +98,9 @@ The current published demo is v1.0.11, based on official carrot-wip.
 
 ### Scope
 
-The embedded upstream definitions currently include **196 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
+The embedded upstream definitions currently include **197 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
-This demo references the UI and settings structure from `carrot-wip` commit `2cd1d7978d9979bd5ace8d730870cc29dbe608b3`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
+This demo references the UI and settings structure from `carrot-wip` commit `05c1678033c1c778f0386fba00c1e105bb26c427`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
 
 ### Privacy and license
 
