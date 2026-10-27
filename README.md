@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.12 | WebCarrot Offline Settings Demo v1.0.12
+# WebCarrot 오프라인 설정 데모 v1.0.13 | WebCarrot Offline Settings Demo v1.0.13
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -27,10 +27,10 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
-현재 정식 데모는 공식 carrot-wip 기준 v1.0.12입니다.
+현재 정식 데모는 공식 carrot-wip 기준 v1.0.13입니다.
 
-- 현재 버전은 **v1.0.12**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [05c16780](https://github.com/ajouatom/openpilot/commit/05c1678033c1c778f0386fba00c1e105bb26c427)입니다.
-- 이번 갱신은 기본값이 꺼짐인 `OnnxBsdEnabled`(ONNX 시각 BSD)를 추가해 공식 설정 197개를 반영했습니다. **ONNX 차선·BSD → 상세 설정**에서 켜고 끌 수 있으며 일반 목록에는 표시하지 않습니다. `ShareData`, `SignalAssistMode`, `ClusterHud`, `ClusterHudEncoder`의 한국어·영어·중국어 설명도 갱신했습니다. 가져온 백업의 미편집 값과 목록 밖 키는 그대로 보존합니다.
+- 현재 버전은 **v1.0.13**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [05c16780](https://github.com/ajouatom/openpilot/commit/05c1678033c1c778f0386fba00c1e105bb26c427)입니다.
+- 이번 갱신은 숫자 조절을 원본과 같은 **x1 → x2 → x5 → x10 → x50 → x100** 순서와 실제 증분으로 맞췄습니다. 예를 들어 x5는 값을 5씩 바꾸며, 파라미터의 단위를 다시 곱하지 않습니다. 범위가 좁은 숫자 설정에도 배율 버튼을 표시하고, 값 직접 입력은 배율과 별개로 범위 안의 정수를 1 단위로 입력할 수 있습니다. 최소·최대 제한과 백업 보존은 유지합니다.
 - 기존 데모 차량 목록에서 누락됐던 Tesla Model 3·Model Y의 HW3/HW4 문서 이름 4개를 복구해 공식 목록 333개와 맞췄습니다. 이번 업스트림에 새로 추가된 차종은 아닙니다.
 - v1.0.7의 검색창 유지 방식은 보존해 한글 조합 중 입력창을 다시 만들지 않습니다.
 - v1.0.6에서는 운전자 감시 메뉴의 `DisableDM`을 `DriverMonitoringMode`와 `CarrotVisionEnabled`로 교체했습니다. 기존 백업의 `DisableDM` 값은 내보낼 때 보존합니다.
@@ -83,10 +83,10 @@ Brand visibility follows the official server's `CarName` fallback: a backed-up `
 
 ### Updates
 
-The current published demo is v1.0.12, based on official carrot-wip.
+The current published demo is v1.0.13, based on official carrot-wip.
 
-- The current demo is **v1.0.12**. Its settings follow ajouatom/openpilot carrot-wip commit [05c16780](https://github.com/ajouatom/openpilot/commit/05c1678033c1c778f0386fba00c1e105bb26c427).
-- This update adds the default-off `OnnxBsdEnabled` (ONNX Vision BSD) toggle for a total of 197 official parameters. It is available under **ONNX lane/BSD → 상세 설정** (Details) and is excluded from ordinary rows. Korean, English and Chinese descriptions for `ShareData`, `SignalAssistMode`, `ClusterHud` and `ClusterHudEncoder` are also updated. Unedited imported values and unsupported keys remain preserved.
+- The current demo is **v1.0.13**. Its settings follow ajouatom/openpilot carrot-wip commit [05c16780](https://github.com/ajouatom/openpilot/commit/05c1678033c1c778f0386fba00c1e105bb26c427).
+- This update matches the official numeric cycle **x1 → x2 → x5 → x10 → x50 → x100** and its actual increments. For example, x5 changes a value by 5 without multiplying the parameter unit again. Numeric settings with narrow ranges also show the step button. Direct entry accepts any integer within the allowed range at 1-unit precision, independently of the selected increment. Bounds and backup preservation remain in effect.
 - Four previously omitted Tesla Model 3/Model Y HW3/HW4 document names are restored, matching the 333-name official catalog. These are corrections to the existing demo, not newly added upstream vehicles.
 - The v1.0.7 search behavior is preserved: the input stays mounted during Korean text composition.
 - v1.0.6 replaced `DisableDM` in the driver monitoring menu with `DriverMonitoringMode` and `CarrotVisionEnabled`. Imported `DisableDM` values remain in exported backups.
