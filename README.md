@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.13 | WebCarrot Offline Settings Demo v1.0.13
+# WebCarrot 오프라인 설정 데모 v1.0.14 | WebCarrot Offline Settings Demo v1.0.14
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -27,11 +27,12 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
-현재 정식 데모는 공식 carrot-wip 기준 v1.0.13입니다.
+현재 정식 데모는 공식 carrot-wip 기준 v1.0.14입니다.
 
-- 현재 버전은 **v1.0.13**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [05c16780](https://github.com/ajouatom/openpilot/commit/05c1678033c1c778f0386fba00c1e105bb26c427)입니다.
-- 이번 갱신은 숫자 조절을 원본과 같은 **x1 → x2 → x5 → x10 → x50 → x100** 순서와 실제 증분으로 맞췄습니다. 예를 들어 x5는 값을 5씩 바꾸며, 파라미터의 단위를 다시 곱하지 않습니다. 범위가 좁은 숫자 설정에도 배율 버튼을 표시하고, 값 직접 입력은 배율과 별개로 범위 안의 정수를 1 단위로 입력할 수 있습니다. 최소·최대 제한과 백업 보존은 유지합니다.
-- 기존 데모 차량 목록에서 누락됐던 Tesla Model 3·Model Y의 HW3/HW4 문서 이름 4개를 복구해 공식 목록 333개와 맞췄습니다. 이번 업스트림에 새로 추가된 차종은 아닙니다.
+- 현재 버전은 **v1.0.14**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [4a555c75](https://github.com/ajouatom/openpilot/commit/4a555c75b81c4ba80bfbf2260007a6baa645fcac)입니다.
+- 이번 갱신은 공식 설정 9개를 추가하고 메뉴 4곳, 조향 지연·자동 턴·HUD 설명 및 HUD 화면 모드 6·7을 반영했습니다. **무게중심 비율**은 0(차량 기본) 또는 31~69이며, 명시적으로 1~30을 입력하면 원본처럼 31로 보정됩니다. ± 조절로 이 구간을 건너갈 때는 감소는 0, 증가는 31로 이동합니다. 가져온 백업의 기존 값은 편집 전까지 바꾸지 않습니다.
+- v1.0.13의 숫자 조절은 원본과 같은 **x1 → x2 → x5 → x10 → x50 → x100** 순서와 실제 증분으로 맞췄습니다. 예를 들어 x5는 값을 5씩 바꾸며, 파라미터의 단위를 다시 곱하지 않습니다. 범위가 좁은 숫자 설정에도 배율 버튼을 표시하고, 값 직접 입력은 배율과 별개로 범위 안의 정수를 1 단위로 입력할 수 있습니다. 최소·최대 제한과 백업 보존은 유지합니다.
+- 차량 문서 이름은 333개로 유지됩니다. v1.0.13에서 기존 데모 차량 목록에 누락됐던 Tesla Model 3·Model Y의 HW3/HW4 문서 이름 4개를 복구해 공식 목록 333개와 맞췄습니다. 이번 업스트림에 새로 추가된 차종은 아닙니다.
 - v1.0.7의 검색창 유지 방식은 보존해 한글 조합 중 입력창을 다시 만들지 않습니다.
 - v1.0.6에서는 운전자 감시 메뉴의 `DisableDM`을 `DriverMonitoringMode`와 `CarrotVisionEnabled`로 교체했습니다. 기존 백업의 `DisableDM` 값은 내보낼 때 보존합니다.
 - 인터넷에 연결된 상태로 데모를 실행하면 최신 정식 Release를 백그라운드에서 확인합니다. **도구 → 데모 업데이트**에서 현재/최신 버전과 상태를 확인하거나 수동으로 다시 확인할 수 있습니다. 새 버전이 있을 때 **업데이트하기**가 나타납니다.
@@ -42,9 +43,9 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 데모의 범위
 
-현재 임베디드 원본 정의에는 **파라미터 197개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
+현재 임베디드 원본 정의에는 **파라미터 206개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
-데모는 `carrot-wip` 커밋 `05c1678033c1c778f0386fba00c1e105bb26c427`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
+데모는 `carrot-wip` 커밋 `4a555c75b81c4ba80bfbf2260007a6baa645fcac`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
 
 ## 개인정보와 라이선스
 
@@ -83,11 +84,12 @@ Brand visibility follows the official server's `CarName` fallback: a backed-up `
 
 ### Updates
 
-The current published demo is v1.0.13, based on official carrot-wip.
+The current published demo is v1.0.14, based on official carrot-wip.
 
-- The current demo is **v1.0.13**. Its settings follow ajouatom/openpilot carrot-wip commit [05c16780](https://github.com/ajouatom/openpilot/commit/05c1678033c1c778f0386fba00c1e105bb26c427).
-- This update matches the official numeric cycle **x1 → x2 → x5 → x10 → x50 → x100** and its actual increments. For example, x5 changes a value by 5 without multiplying the parameter unit again. Numeric settings with narrow ranges also show the step button. Direct entry accepts any integer within the allowed range at 1-unit precision, independently of the selected increment. Bounds and backup preservation remain in effect.
-- Four previously omitted Tesla Model 3/Model Y HW3/HW4 document names are restored, matching the 333-name official catalog. These are corrections to the existing demo, not newly added upstream vehicles.
+- The current demo is **v1.0.14**. Its settings follow ajouatom/openpilot carrot-wip commit [4a555c75](https://github.com/ajouatom/openpilot/commit/4a555c75b81c4ba80bfbf2260007a6baa645fcac).
+- This update adds nine official settings and follows four menu changes, revised steering-delay/auto-turn/HUD descriptions and HUD screen modes 6 and 7. **Center of gravity ratio** accepts 0 (vehicle default) or 31–69. An explicit entry from 1–30 becomes 31, matching upstream. Stepping into that gap moves to 0 when decreasing or 31 when increasing. Imported values remain untouched until explicitly edited.
+- The v1.0.13 numeric controls retain the official cycle **x1 → x2 → x5 → x10 → x50 → x100** and its actual increments. For example, x5 changes a value by 5 without multiplying the parameter unit again. Numeric settings with narrow ranges also show the step button. Direct entry accepts any integer within the allowed range at 1-unit precision, independently of the selected increment. Bounds and backup preservation remain in effect.
+- The catalog remains at 333 vehicle document names. In v1.0.13, four previously omitted Tesla Model 3/Model Y HW3/HW4 document names are restored, matching the 333-name official catalog. These are corrections to the existing demo, not newly added upstream vehicles.
 - The v1.0.7 search behavior is preserved: the input stays mounted during Korean text composition.
 - v1.0.6 replaced `DisableDM` in the driver monitoring menu with `DriverMonitoringMode` and `CarrotVisionEnabled`. Imported `DisableDM` values remain in exported backups.
 - When opened with an internet connection, the demo checks the latest stable GitHub Release in the background. Open **도구 → 데모 업데이트** (Tools → Demo update) to see the current/latest versions and status or check manually. An **업데이트하기** (Update) button appears when a newer stable version is available.
@@ -98,9 +100,9 @@ The current published demo is v1.0.13, based on official carrot-wip.
 
 ### Scope
 
-The embedded upstream definitions currently include **197 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
+The embedded upstream definitions currently include **206 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
-This demo references the UI and settings structure from `carrot-wip` commit `05c1678033c1c778f0386fba00c1e105bb26c427`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
+This demo references the UI and settings structure from `carrot-wip` commit `4a555c75b81c4ba80bfbf2260007a6baa645fcac`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
 
 ### Privacy and license
 
