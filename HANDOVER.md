@@ -5,7 +5,7 @@
 - Repository: fullmetalsonic/webcarrot-offline-demo (public).
 - Pages source: main branch, repository root.
 - `index.html` and the Release asset `webcarrot-offline-demo.html` must be byte-identical.
-- Current published version: 1.0.14. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 4a555c75b81c4ba80bfbf2260007a6baa645fcac (206 parameters; 333 vehicle document names; PaddleMode max=3).
+- Artifact version: 1.0.15. Settings/menu source: official ajouatom/openpilot:carrot-wip commit 14c5398fca00d298c2791ecf43f46b3e3fd6cc38 (207 parameters; 333 vehicle document names; PaddleMode max=3).
 - Source schema and vehicle catalog are embedded; no runtime device connection.
 - Published v1.0.0 on 2026-09-24. Pages built successfully and unauthenticated latest-Release API returned HTTP 200 with CORS allowed.
 - Published v1.0.1 on 2026-09-24. Pages built successfully; the latest stable Release API returned HTTP 200 with CORS allowed and `v1.0.1`.
@@ -13,7 +13,6 @@
 - Published v1.0.2 on 2026-09-25 with hierarchical browser Back behavior.
 - Published v1.0.3 on 2026-09-26 with the official `carrot` settings/menu schema. Pages, repository `index.html`, workspace copy, and Release asset SHA-256: `A4E3022947423C1DD7A762F034E6961F5118598203CF11E7352B65F842B31E73`.
 - Published v1.0.4 on 2026-09-26 from official carrot-wip d4fca67f20bc18ea543d93f9db5a7ac4fef66f91 (184 parameters); Pages/repository/Release HTML SHA-256: 951CC689EEF295141518A30487A8637AE664D7C1EA4B1F1011D3F59EF0D2A016.
-- JavaScript syntax and focused production/browser numeric-control checks passed for v1.0.14. Full runtime update scenarios, original-screen screenshot parity and physical-phone validation remain unrun.
 - v1.0.1 corrects display of imported `True`/`False` string values for schema-defined binary parameters. Unedited JSON values and unknown keys remain intact. The current user backup had 12 such values (5 true, 7 false); four keys are in the current menu and eight are unknown to its schema.
 - v1.0.2 records hierarchical in-app view state in browser history: Android/browser Back returns through settings, search, vehicle and value-dialog steps. The Settings top level does not trap Back. Syntax checked; real phone/browser interaction remains unverified.
 
@@ -32,7 +31,7 @@ No local URL/browser workaround is allowed by the user's instructions. The curre
 
 For v1.0.13, the permitted public Pages URL was exercised in a real browser at desktop width and with a verified 390px viewport: six increments, direct integer entry, bounds, narrow-range controls and imported-to-downloaded JSON preservation passed. This is representative browser-flow evidence, not a physical-phone or full original-screen visual comparison. Browser viewport emulation resets between tool rounds and must be reapplied; a screenshot request timed out, so no screenshot parity was claimed.
 
-Brand visibility follows the official server's Hyundai CarName fallback. The demo does not decode binary CarParamsPersistent.brand, and CarSelected3 alone does not override the brand filter. Toyota/Lexus restrictions are embedded but require the unavailable binary brand path; the demo does not invent a Toyota CarName fallback. This offline limitation is documented in both README languages.
+The device derives brand restrictions from the live `CarParamsPersistent.brand` or its Hyundai `CarName` fallback. Offline v1.0.15 uses recognized catalog vehicles and available backup metadata; a standard backup excludes binary `CarParamsPersistent`. It cannot establish a live fingerprint. `LongitudinalPersonalityMax` determines the effective 3/4 gap choices, independently of the imported raw gap value.
 
 ## Publication contents
 
@@ -140,3 +139,12 @@ Only the demo, public documentation and source license notices belong here. Neve
 - The vehicle catalog remains byte-identical at 333 names. Two upstream vehicle files changed flag constants only; CarDocs are unchanged. Search, vehicle selection, visibility, update and backup runtime functions are unchanged. The existing binary CarParamsPersistent brand-detection limitation remains. A README history sentence was corrected to attribute the four restored Tesla names to v1.0.10, consistent with the historical entry above.
 - Pages built and returned HTTP 200. Local index.html, public Pages HTML and downloaded v1.0.14 Release asset webcarrot-offline-demo.html share SHA-256 FA030CCAB014BFD5D87CF2CB7AC9339A9D85B999D721E289B7F733C9B77F27D3 (350956 bytes). Latest stable Release API returned v1.0.14, draft=false, prerelease=false and CORS allowed. Gitleaks scanned the three candidate files with full redaction and found no secrets; publication review also checked source/document scope.
 - Only the official demo, its regression file and public documentation changed. No OpenPilot source, fork branches, vehicle code, FMS demo, personal backup/Params, PC log receiver or unrelated automation was modified.
+
+## v1.0.15 settings interaction and restore compatibility (2026-11-04)
+
+- Pinned official `carrot-wip` at `14c5398fca00d298c2791ecf43f46b3e3fd6cc38`; schema blob `20bb9ded3ff787a249ce8d8114c38c0faa541ad2`. Full schema/menu match with 207 parameters. Added `CommaPedalEnabled`; `AutoTurnControlRightLaneChange` is now a 0–500 stepper and four other settings have revised descriptions. The upstream UI stores 1 at x1 from 0; current vehicle code reads the legacy value 1 as 250m. The demo keeps the exported value 1 intact. Catalog remains 333 names.
+- The 102 numeric controls share the source cycle 1/2/5/10/50/100, press and hold (900 ms delay, 160 ms repeats), scroll cancellation, per-key browser storage, unit display, and direct-entry clamp/round/zero-gap behavior. Choice selection commits immediately, defaults ask for confirmation when different, and an unchanged effective value does not rewrite the imported type. Where the device uses a live fingerprint and gap capability, the demo uses recognized vehicles and backed-up gap capability, with a maximum of 3 when unavailable.
+- Standard JSON output preserves untouched value tokens, including large integers, nested values and unknown keys; missing keys stay missing until edited. Updates within the hosted demo use the same preserved payload. The displayed effective gap or brand filtering does not change the export.
+- Ran the official multipart file restore endpoint and service with a modeled Params store and real in-memory multipart parsing. Fresh demo JSON (207 keys): 206 processed, one excluded (`DriverMonitoringEnabled`), zero failures; two schema-only values exercised the temporary file fallback. Imported fixtures demonstrated typed BOOL/INT conversion, native skips, partial failure and ATC legacy distance. This establishes the file format and modeled restore semantics, not a native device write or post-restart readback. The file restore does not clamp schema ranges.
+- Regression: 17 PASS, FAIL 0, SKIP 0. The 102 numeric rows were compared across six factors, five starting values and both directions (6120 cases). Temporary 390px Chromium touch checks passed: x5 tap and repeat, cancellation and release without an extra step, valid/invalid direct entry, Toyota and gap visibility, immediate choice and a downloaded seven-key JSON with exactly two edits and its 21-digit integer intact. No local file URL was used. Full original-screen visual comparison and physical phone/Comma execution remain unrun.
+- The verified release candidate is 361187 bytes, SHA-256 `9961A630B56BCEF1659FB58D6F22CDC114AAE65CD3A96E774D686F298D81895D`. Use the same bytes for Pages and the Release asset. Only the public offline demo, tests and docs are in the release scope.

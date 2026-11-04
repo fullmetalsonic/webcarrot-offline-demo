@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.14 | WebCarrot Offline Settings Demo v1.0.14
+# WebCarrot 오프라인 설정 데모 v1.0.15 | WebCarrot Offline Settings Demo v1.0.15
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -10,8 +10,8 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 1. 위의 **데모 바로 실행**을 누릅니다. 오프라인에서 사용하려면 **최신 HTML 다운로드**로 단일 HTML 파일을 저장해 엽니다.
 2. **도구 → JSON 백업 불러오기**에서 기존 콤마 파라미터 백업을 선택합니다. 백업이 없으면 데모가 제공하는 원본 기본값으로 시작할 수 있습니다.
-3. **설정**에서 분류와 그룹을 따라가거나 검색해 파라미터를 찾습니다. 화면의 스위치·숫자 조절·선택 메뉴로 값을 편집합니다. **기본값** 버튼은 해당 파라미터 하나만 기본값으로 바꿉니다.
-4. **도구 → 백업 JSON 내보내기**를 눌러 저장합니다. 이 파일을 받은 사람도 자신의 콤마에서 불러와 동일한 설정값을 적용할 수 있습니다.
+3. **설정**에서 분류와 그룹을 따라가거나 검색해 파라미터를 찾습니다. ±를 길게 누르면 반복 조절되고, 가운데 값을 누르면 직접 입력할 수 있습니다. **기본값**은 확인 후 해당 항목만 바꿉니다.
+4. **도구 → 백업 JSON 내보내기**를 누릅니다. 콤마의 파일 복원에서 지원하는 키와 값만 적용됩니다. 기기에 적용할 때는 그 기기의 백업을 먼저 가져와 필요한 항목만 편집하고, 복원 후 변경값을 확인하세요.
 
 휴대폰 브라우저의 뒤로가기는 차량 선택·값 선택창을 닫고, 설정 하위 그룹을 한 단계씩 거슬러 올라갑니다. 설정 첫 화면에서는 브라우저 기본 뒤로가기가 동작합니다.
 
@@ -22,16 +22,15 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 - 일부 백업은 이진 설정값을 문자열 `"True"`/`"False"`로 저장합니다. 데모 메뉴에 정의된 `min=0, max=1` 파라미터라면 화면에서 `1`/`0`으로 해석해 맞는 토글·선택 상태를 보여줍니다. 사용자가 바꾸기 전에는 원래 문자열을 그대로 내보내며, 편집한 뒤 해당 키만 숫자 문자열 `"0"`/`"1"`로 저장합니다. 현재 메뉴에 정의되지 않은 키의 값은 표시용 변환 없이 원본 그대로 보존합니다.
 - 내장 차량 목록은 원본의 차량 정의를 바탕으로 합니다. 기기별 추가 차량은 목록에 없을 수 있습니다. 기존 백업에 있는 그런 값도 그대로 보존됩니다.
 - 콤마 서버에서 받는 실제 차종별 인기값은 데모가 알 수 없어 표시하지 않습니다. 오프라인 안내로 구분합니다.
-- 차량별 숨김 조건은 공식 서버의 `CarName` 대체 판정과 같이 백업의 `CarName`이 HYUNDAI·KIA·GENESIS로 시작하면 현대 계열에 숨겨진 종방향 튜닝 3개를 목록·검색에서 제외합니다. 데모의 차량 선택값 `CarSelected3`만 바꾸면 이 판정은 바뀌지 않습니다. 실제 기기의 바이너리 `CarParamsPersistent` 브랜드 판정은 제공하지 않습니다. 토요타 브랜드의 숨김 정의도 포함하지만, 공식 서버처럼 바이너리 브랜드를 판독하지 못하므로 `CarName`만으로 토요타·렉서스를 추정해 숨기지는 않습니다.
+- 차량 선택 목록에서 확인된 현대·기아·제네시스 및 토요타·렉서스에는 공식 브랜드 조건을 적용합니다. 콤마는 실제 차량 식별 결과를 사용하고, 데모는 선택 차량과 백업에서 확인할 수 있는 정보로 설정을 표시합니다. 갭 단계는 백업의 `LongitudinalPersonalityMax`에 따라 최대 3 또는 4로 표시합니다. 숨겨지거나 표시 범위를 벗어난 가져온 값도 편집 전에는 보존합니다.
 - ONNX 차선·BSD의 세부값 6개는 원본 `detail_parent` 관계에 따라 **상세 설정**에서 열며, 일반 목록과 설정 개수에는 포함하지 않습니다.
+
+**복원 호환성:** 콤마의 일반 파일 복원은 지원하지 않는 키와 `DriverMonitoringEnabled` 등 제외 항목을 건너뜁니다. `"True"`·`"False"`는 BOOL 키에 쓸 수 있지만 INT 키에서는 실패할 수 있습니다. 데모는 가져온 값을 자동으로 바꾸지 않습니다. 콤마는 일부 값이 실패해도 복원 응답을 반환할 수 있으며, 파일 복원은 설정 화면의 범위 보정과 다릅니다. 새 데모의 기본값 묶음은 실제 기기에서 받은 전체 백업과 다릅니다.
 
 ## 업데이트
 
-현재 정식 데모는 공식 carrot-wip 기준 v1.0.14입니다.
-
-- 현재 버전은 **v1.0.14**이며, 설정 정의 기준은 ajouatom/openpilot의 carrot-wip 커밋 [4a555c75](https://github.com/ajouatom/openpilot/commit/4a555c75b81c4ba80bfbf2260007a6baa645fcac)입니다.
-- 이번 갱신은 공식 설정 9개를 추가하고 메뉴 4곳, 조향 지연·자동 턴·HUD 설명 및 HUD 화면 모드 6·7을 반영했습니다. **무게중심 비율**은 0(차량 기본) 또는 31~69이며, 명시적으로 1~30을 입력하면 원본처럼 31로 보정됩니다. ± 조절로 이 구간을 건너갈 때는 감소는 0, 증가는 31로 이동합니다. 가져온 백업의 기존 값은 편집 전까지 바꾸지 않습니다.
-- v1.0.13의 숫자 조절은 원본과 같은 **x1 → x2 → x5 → x10 → x50 → x100** 순서와 실제 증분으로 맞췄습니다. 예를 들어 x5는 값을 5씩 바꾸며, 파라미터의 단위를 다시 곱하지 않습니다. 범위가 좁은 숫자 설정에도 배율 버튼을 표시하고, 값 직접 입력은 배율과 별개로 범위 안의 정수를 1 단위로 입력할 수 있습니다. 최소·최대 제한과 백업 보존은 유지합니다.
+- **v1.0.15**는 공식 ajouatom/openpilot의 carrot-wip 커밋 [14c5398](https://github.com/ajouatom/openpilot/commit/14c5398fca00d298c2791ecf43f46b3e3fd6cc38)을 기준으로 합니다. `CommaPedalEnabled`를 추가하고 우회전 전 자동 차선변경을 0~500m 거리 설정으로 갱신했습니다. 그 설정에서 `1`은 최신 콤마에서 기존 켜짐 값인 250m로 해석됩니다.
+- 배율은 **x1 → x2 → x5 → x10 → x50 → x100** 순서로 바뀌고, 각 설정의 배율은 같은 브라우저에서 유지됩니다. ±를 누른 채 0.9초가 지나면 약 0.16초 간격으로 반복합니다. 직접 입력은 원본처럼 범위를 벗어난 숫자를 경계값으로 맞추고 정수로 반올림합니다. **무게중심 비율**의 0 또는 31~69 규칙도 적용합니다.
 - 차량 문서 이름은 333개로 유지됩니다. v1.0.10에서 기존 데모 차량 목록에 누락됐던 Tesla Model 3·Model Y의 HW3/HW4 문서 이름 4개를 복구해 공식 목록 333개와 맞췄습니다. 이번 업스트림에 새로 추가된 차종은 아닙니다.
 - v1.0.7의 검색창 유지 방식은 보존해 한글 조합 중 입력창을 다시 만들지 않습니다.
 - v1.0.6에서는 운전자 감시 메뉴의 `DisableDM`을 `DriverMonitoringMode`와 `CarrotVisionEnabled`로 교체했습니다. 기존 백업의 `DisableDM` 값은 내보낼 때 보존합니다.
@@ -43,9 +42,9 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 데모의 범위
 
-현재 임베디드 원본 정의에는 **파라미터 206개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
+현재 임베디드 원본 정의에는 **파라미터 207개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
-데모는 `carrot-wip` 커밋 `4a555c75b81c4ba80bfbf2260007a6baa645fcac`의 UI·설정 구조를 참고합니다. 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 원본과 같은 화면인지 확인하는 렌더링 기반 시각 비교는 아직 완료되지 않았습니다.
+원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 공식 복원 코드를 시험용 저장소에서 검증했으며, 실제 콤마 복원과 재시작 후 값 확인은 별도입니다.
 
 ## 개인정보와 라이선스
 
@@ -67,8 +66,8 @@ The demo interface is currently in Korean; this README explains it in English as
 
 1. Select **Open the demo** above. To work offline, download the single HTML file and open it on your device.
 2. In the Korean **도구** (Tools) menu, select **JSON 백업 불러오기** (Import parameter backup) to load a Comma parameter backup. You can also start with the demo's included upstream defaults.
-3. Find a parameter in the **설정** (Settings) menu by browsing categories and groups or by searching. Edit values with the displayed switches, numeric controls and choice menus. **기본값** (Default) changes only that parameter.
-4. In **도구** (Tools), select **백업 JSON 내보내기** (Export parameter backup) and share the JSON file. Another user can import that file on their Comma device to apply the same parameter values.
+3. In **설정** (Settings), browse or search for a parameter. Hold ± to repeat or tap the current value to enter a number. **기본값** (Default) asks for confirmation and changes only that parameter.
+4. In **도구** (Tools), select **백업 JSON 내보내기** (Export parameter backup). Comma's file restore applies supported keys and values. For a device, start with its own backup, edit only the intended settings, and check those settings after restore.
 
 On a phone, browser Back closes vehicle and value dialogs first, then walks back through settings groups one level at a time. At the top-level Settings screen, normal browser Back is allowed.
 
@@ -80,15 +79,14 @@ On a phone, browser Back closes vehicle and value dialogs first, then walks back
 - The embedded vehicle catalog is based on upstream vehicle definitions. A device may include additional vehicles that are absent from this catalog; existing backup values for those vehicles are preserved.
 - Per-vehicle popular values come from the Comma server and are unavailable offline, so the demo labels them as unavailable instead of inventing statistics.
 
-Brand visibility follows the official server's `CarName` fallback: a backed-up `CarName` beginning with HYUNDAI, KIA or GENESIS hides the three Hyundai-restricted longitudinal tuning settings from browsing and search. Changing `CarSelected3` alone does not change this test. Binary `CarParamsPersistent` brand detection is not available. Toyota restrictions are included in the schema, but the demo does not infer Toyota/Lexus from `CarName` to hide them because the official server requires the binary brand for that case. The six ONNX lane/BSD detail values open through **상세 설정** (Details), following `detail_parent`, and are excluded from ordinary rows and counts.
+Recognized Hyundai/Kia/Genesis and Toyota/Lexus models follow the official visibility rules. The device uses its live fingerprint; the demo uses the chosen vehicle and available backup information. `LongitudinalPersonalityMax` limits gap levels to 3 or 4. Hidden or out of range backup values stay intact until edited. The six ONNX lane/BSD detail values remain under **상세 설정** (Details), following `detail_parent`.
+
+**Restore compatibility:** The device skips unsupported and excluded keys such as `DriverMonitoringEnabled`. The strings `"True"` and `"False"` work for BOOL keys, but can fail for INT keys. The demo preserves imported values. Restore can return a response even when some entries fail, and it does not apply the settings screen's range correction. A new demo's default export is different from a full device backup.
 
 ### Updates
 
-The current published demo is v1.0.14, based on official carrot-wip.
-
-- The current demo is **v1.0.14**. Its settings follow ajouatom/openpilot carrot-wip commit [4a555c75](https://github.com/ajouatom/openpilot/commit/4a555c75b81c4ba80bfbf2260007a6baa645fcac).
-- This update adds nine official settings and follows four menu changes, revised steering-delay/auto-turn/HUD descriptions and HUD screen modes 6 and 7. **Center of gravity ratio** accepts 0 (vehicle default) or 31–69. An explicit entry from 1–30 becomes 31, matching upstream. Stepping into that gap moves to 0 when decreasing or 31 when increasing. Imported values remain untouched until explicitly edited.
-- The v1.0.13 numeric controls retain the official cycle **x1 → x2 → x5 → x10 → x50 → x100** and its actual increments. For example, x5 changes a value by 5 without multiplying the parameter unit again. Numeric settings with narrow ranges also show the step button. Direct entry accepts any integer within the allowed range at 1-unit precision, independently of the selected increment. Bounds and backup preservation remain in effect.
+- **v1.0.15** follows official ajouatom/openpilot carrot-wip commit [14c5398](https://github.com/ajouatom/openpilot/commit/14c5398fca00d298c2791ecf43f46b3e3fd6cc38). It adds `CommaPedalEnabled` and updates the pre-turn lane-change setting to a 0–500m distance. Current device code interprets the stored value `1` as the legacy enabled value of 250m.
+- The **x1 → x2 → x5 → x10 → x50 → x100** cycle persists per setting in the same browser. Holding ± repeats after 0.9 seconds and then about every 0.16 seconds. Direct entry clamps to the allowed range and rounds to integers, including the **center of gravity ratio** rule of 0 or 31–69.
 - The catalog remains at 333 vehicle document names. In v1.0.10, four previously omitted Tesla Model 3/Model Y HW3/HW4 document names were restored, matching the 333-name official catalog. These are corrections to the existing demo, not newly added upstream vehicles.
 - The v1.0.7 search behavior is preserved: the input stays mounted during Korean text composition.
 - v1.0.6 replaced `DisableDM` in the driver monitoring menu with `DriverMonitoringMode` and `CarrotVisionEnabled`. Imported `DisableDM` values remain in exported backups.
@@ -100,9 +98,9 @@ The current published demo is v1.0.14, based on official carrot-wip.
 
 ### Scope
 
-The embedded upstream definitions currently include **206 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
+The embedded upstream definitions currently include **207 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
-This demo references the UI and settings structure from `carrot-wip` commit `4a555c75b81c4ba80bfbf2260007a6baa645fcac`. It does not automatically track changes in upstream carrot-wip. A rendered visual comparison against the original WebCarrot screens has not yet been completed.
+The demo does not automatically track changes in upstream carrot-wip. Restore compatibility was checked with the official code and a test parameter store; a physical Comma restore and post-restart readback are separate checks.
 
 ### Privacy and license
 
