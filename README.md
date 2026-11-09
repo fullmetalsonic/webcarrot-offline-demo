@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.16 | WebCarrot Offline Settings Demo v1.0.16
+# WebCarrot 오프라인 설정 데모 v1.0.17 | WebCarrot Offline Settings Demo v1.0.17
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -19,7 +19,10 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 - 데모에서 **차량 선택**을 누르면 제조사 → 모델 → 확인 순서로 `CarSelected3` 값을 편집합니다. 기기에 즉시 적용되지는 않습니다. 실제 적용은 JSON 백업을 콤마에서 복원한 뒤 재시작해야 합니다.
 - 기존 백업을 불러오면 설정 수 차이를 이유로 파라미터를 자동 추가하거나 지우지 않습니다. 모르는 키, 수정하지 않은 값의 자료형과 중첩값은 내보낼 때 유지됩니다. 명시적으로 변경한 값만 저장되며, 선택한 차량은 `CarSelected3`에 기록됩니다.
-- 일부 백업은 이진 설정값을 문자열 `"True"`/`"False"`로 저장합니다. 데모 메뉴에 정의된 `min=0, max=1` 파라미터라면 화면에서 `1`/`0`으로 해석해 맞는 토글·선택 상태를 보여줍니다. 사용자가 바꾸기 전에는 원래 문자열을 그대로 내보내며, 편집한 뒤 해당 키만 숫자 문자열 `"0"`/`"1"`로 저장합니다. 현재 메뉴에 정의되지 않은 키의 값은 표시용 변환 없이 원본 그대로 보존합니다.
+- 이진 설정은 원본에 등록된 BOOL/INT 자료형으로 해석합니다. BOOL의 `"True"`, `"yes"`, `"on"` 등은 원본 복원 규칙에 따라 표시하고, INT에서 복원할 수 없는 문자열 등은 확인이 필요한 원본 값으로 표시합니다. 편집 전 원래 값은 내보내기에서 유지됩니다.
+- 불러온 파일 이름과 임시 보관 상태를 화면에서 확인할 수 있습니다. 같은 탭을 새로고침하면 임시 보관한 작업을 복원합니다. 탭을 닫거나 다른 브라우저로 옮길 때는 JSON 파일로 내보내세요. 저장소가 차단되거나 가득 차면 경고하며, 손상된 보관본을 읽었을 때는 새 백업을 불러오거나 **새 데모 시작**을 선택하기 전까지 내보내기를 막습니다.
+- 파일을 읽는 동안 편집·내보내기·새 데모 시작을 막습니다. 다른 파일을 연속 선택하면 마지막 선택만 적용합니다. 새 파일이 적용되면 이전 편집창과 조작은 종료됩니다. 메뉴 밖 키나 중첩된 형식은 임의로 풀거나 지우지 않고 안내와 함께 보존합니다.
+- 화면의 유효값과 백업 원본이 다르면 구분해 표시합니다. 사용자가 값을 명시적으로 적용하면 해당 원본 키에 저장하고, 보기·취소만 했을 때는 누락된 키도 추가하지 않습니다. 내보내기 파일명에는 공식 데모 구분, 원본 파일 이름과 시각이 들어갑니다.
 - 내장 차량 목록은 원본의 차량 정의를 바탕으로 합니다. 기기별 추가 차량은 목록에 없을 수 있습니다. 기존 백업에 있는 그런 값도 그대로 보존됩니다.
 - 콤마 서버에서 받는 실제 차종별 인기값은 데모가 알 수 없어 표시하지 않습니다. 오프라인 안내로 구분합니다.
 - 차량 선택 목록에서 확인된 현대·기아·제네시스 및 토요타·렉서스에는 공식 브랜드 조건을 적용합니다. 콤마는 실제 차량 식별 결과를 사용하고, 데모는 선택 차량과 백업에서 확인할 수 있는 정보로 설정을 표시합니다. 갭 단계는 백업의 `LongitudinalPersonalityMax`에 따라 최대 3 또는 4로 표시합니다. 숨겨지거나 표시 범위를 벗어난 가져온 값도 편집 전에는 보존합니다.
@@ -29,6 +32,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
+- **v1.0.17**은 백업 처리 수리입니다. 새로고침 후 기본값이 내보내지는 문제, 읽기 완료 순서 역전, 이전 편집창의 값 덮어쓰기, 업데이트 보관본의 탭 간 덮어쓰기, 표시값과 저장값의 불일치를 수정했습니다. 원본 설정 212개와 차량 목록은 v1.0.16 기준을 유지합니다.
 - **v1.0.16**은 공식 carrot-wip [0df8361](https://github.com/ajouatom/openpilot/commit/0df83618f196357165a29218c9a588b0131c7d20) 기준입니다. 수동 턴 자동깜박이와 Tesla CAN 빨간불 정지·수동 차로변경 램프·모델 의도 램프·모델 경로 램프 설정을 추가했습니다. 새 항목은 모두 기본 꺼짐이며, 원본의 전체 설명·주의문과 메뉴 순서를 반영했습니다. 수동 차로변경 표시·항상 조향·Tesla 자동 방향지시등·현대 카메라 SCC 설명도 갱신했습니다.
 - **v1.0.15**는 공식 ajouatom/openpilot의 carrot-wip 커밋 [14c5398](https://github.com/ajouatom/openpilot/commit/14c5398fca00d298c2791ecf43f46b3e3fd6cc38)을 기준으로 합니다. `CommaPedalEnabled`를 추가하고 우회전 전 자동 차선변경을 0~500m 거리 설정으로 갱신했습니다. 그 설정에서 `1`은 최신 콤마에서 기존 켜짐 값인 250m로 해석됩니다.
 - 배율은 **x1 → x2 → x5 → x10 → x50 → x100** 순서로 바뀌고, 각 설정의 배율은 같은 브라우저에서 유지됩니다. ±를 누른 채 0.9초가 지나면 약 0.16초 간격으로 반복합니다. 직접 입력은 원본처럼 범위를 벗어난 숫자를 경계값으로 맞추고 정수로 반올림합니다. **무게중심 비율**의 0 또는 31~69 규칙도 적용합니다.
@@ -76,7 +80,10 @@ On a phone, browser Back closes vehicle and value dialogs first, then walks back
 
 - **차량 선택** (Vehicle selection) edits `CarSelected3` through make → model → confirmation. The demo does not write to a device. To apply the choice, restore the exported JSON on the Comma device and restart it.
 - Importing a backup does not add or delete parameters just because the parameter counts differ. Unknown keys and unedited values, including their JSON types and nested structures, are preserved on export. Only explicit edits are saved; the chosen vehicle is recorded as `CarSelected3`.
-- Some backups store binary settings as the strings `"True"` or `"False"`. When a parameter is present in the demo schema with `min=0, max=1`, the UI interprets these as `1` and `0` to display the matching toggle or choice. The original string is exported unchanged unless the user edits it. After an explicit edit, only that key is saved as the numeric string `"0"` or `"1"`. Values for unknown parameters are preserved without display conversion.
+- Binary values follow the original registered BOOL/INT types. BOOL strings such as `"True"`, `"yes"` and `"on"` follow the official restore rules; invalid INT strings are marked for review. Original values remain intact until an explicit edit.
+- The screen identifies the loaded file and draft status. A reload in the same tab restores the draft. Export JSON before closing the tab or moving to another browser. Blocked/full storage is reported. A corrupt saved draft blocks export until a valid import or an explicit new demo.
+- Editing, export and reset are blocked during import; the last selected file wins. A committed import invalidates previous editors and gestures. Unknown keys and nested formats are retained with appropriate notices.
+- Effective values and stored originals are distinguished. Explicit Apply writes the chosen key; browsing and cancellation keep missing keys absent. Export names identify the official demo, source filename and timestamp.
 - The embedded vehicle catalog is based on upstream vehicle definitions. A device may include additional vehicles that are absent from this catalog; existing backup values for those vehicles are preserved.
 - Per-vehicle popular values come from the Comma server and are unavailable offline, so the demo labels them as unavailable instead of inventing statistics.
 
@@ -86,6 +93,7 @@ Recognized Hyundai/Kia/Genesis and Toyota/Lexus models follow the official visib
 
 ### Updates
 
+- **v1.0.17** repairs backup lifecycle problems: default exports after reload, reversed import completion, stale editor writes, cross-tab update handoff overwrites and displayed/stored value mismatches. The 212-setting schema and vehicle catalog remain pinned to v1.0.16.
 - **v1.0.16** follows official carrot-wip [0df8361](https://github.com/ajouatom/openpilot/commit/0df83618f196357165a29218c9a588b0131c7d20). It adds Manual Turn Indicator and Tesla CAN Red Light Stop, Manual Lane Lamps, Model Desire Lamps and Model Path Lamps. All five default to OFF. Full upstream descriptions, cautions and menu order are included, with revised descriptions for Manual Lane Change Indicator, Always Lateral, Tesla Automatic Turn Signals and Hyundai Camera SCC.
 - **v1.0.15** follows official ajouatom/openpilot carrot-wip commit [14c5398](https://github.com/ajouatom/openpilot/commit/14c5398fca00d298c2791ecf43f46b3e3fd6cc38). It adds `CommaPedalEnabled` and updates the pre-turn lane-change setting to a 0–500m distance. Current device code interprets the stored value `1` as the legacy enabled value of 250m.
 - The **x1 → x2 → x5 → x10 → x50 → x100** cycle persists per setting in the same browser. Holding ± repeats after 0.9 seconds and then about every 0.16 seconds. Direct entry clamps to the allowed range and rounds to integers, including the **center of gravity ratio** rule of 0 or 31–69.

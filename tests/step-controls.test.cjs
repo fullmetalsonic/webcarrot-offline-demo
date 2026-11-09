@@ -83,13 +83,13 @@ function normalizeSettingNumericValue(raw, p, previous = null) {
 }
 
 
-function loadDemo({ storage = new Map(), storageBlocked = false, hosted = false } = {}) {
+function loadDemo({ storage = new Map(), storageBlocked = false, session = new Map(), sessionFailure = {}, hosted = false, startup: executeStartup = false, navEntries = [] } = {}) {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
-  const startup = 'state.backup=defaultBackup();restorePendingUpdate();render();initNavHistory();checkForUpdate();';
+  const startup = 'initializeBackup();render();initNavHistory();checkForUpdate();';
   assert.equal(script.split(startup).length, 2, 'Only browser startup is suppressed');
   const nodes = new Map(), listeners = new Map(), timers = new Map();
-  const confirmations = [];
+  const confirmations = [], downloads = [], navigations = [];
   let confirmAnswer = true, now = 1000, timerId = 0;
   let exportedBlob;
   function listen(owner, type, listener) {
@@ -115,11 +115,11 @@ function loadDemo({ storage = new Map(), storageBlocked = false, hosted = false 
   function element(id = '') {
     if (nodes.has(id)) return nodes.get(id);
     const node = {
-      id, hidden: true, textContent: '', innerHTML: '', value: '', style: {}, dataset: {},
+      id, hidden: true, disabled: false, textContent: '', innerHTML: '', value: '', style: {}, dataset: {}, isConnected: true,
       addEventListener(type, listener) { listen(id, type, listener); },
       setAttribute() {}, focus() {}, querySelector() { return element('query-' + id); },
       querySelectorAll() { return []; }, insertAdjacentHTML() {}, classList: { toggle() {}, add() {}, remove() {} },
-      click() {}, remove() {},
+      click() { if (this.download) downloads.push({ name: this.download, blob: exportedBlob }); }, remove() {},
     };
     nodes.set(id, node);
     return node;
@@ -132,13 +132,21 @@ function loadDemo({ storage = new Map(), storageBlocked = false, hosted = false 
   class TestURL extends URL {}
   TestURL.createObjectURL = blob => { exportedBlob = blob; return 'blob:step-test'; };
   TestURL.revokeObjectURL = () => {};
-  class TestDate extends Date { static now() { return now; } }
+  class TestDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [now])); }
+    static now() { return now; }
+  }
   const localStorage = {
     getItem(key) { if (storageBlocked) throw new Error('storage blocked'); return storage.get(key) ?? null; },
     setItem(key, value) { if (storageBlocked) throw new Error('storage blocked'); storage.set(key, String(value)); },
     removeItem(key) { if (storageBlocked) throw new Error('storage blocked'); storage.delete(key); },
   };
-  const historyEntries = [];
+  const sessionStorage = {
+    getItem(key) { if (sessionFailure.read) throw new Error('session read blocked'); return session.get(key) ?? null; },
+    setItem(key, value) { if (sessionFailure.write) throw new Error('session quota exceeded'); session.set(key, String(value)); },
+    removeItem(key) { if (sessionFailure.remove) throw new Error('session removal blocked'); session.delete(key); },
+  };
+  const historyEntries = structuredClone(navEntries);
   const history = {
     get state() { return historyEntries.at(-1); },
     pushState(entry) { historyEntries.push(entry); },
@@ -148,24 +156,27 @@ function loadDemo({ storage = new Map(), storageBlocked = false, hosted = false 
       historyEntries.pop();
       dispatch('popstate', null, { state: this.state }, 'window');
     },
+    go(delta) { while (delta++ < 0 && historyEntries.length > 1) historyEntries.pop(); dispatch('popstate', null, { state: this.state }, 'window'); },
   };
   const context = vm.createContext({
-    document, Blob, URL: TestURL, Date: TestDate, localStorage, setTimeout: schedule, clearTimeout: id => timers.delete(id),
+    document, Blob, URL: TestURL, Date: TestDate, localStorage, sessionStorage, AbortController, crypto: require('node:crypto').webcrypto,
+    fetch: async () => ({ ok: true, json: async () => ({ tag_name: 'v1.0.0', assets: [] }) }),
+    setTimeout: schedule, clearTimeout: id => timers.delete(id),
     confirm(message) { confirmations.push(message); return confirmAnswer; },
     history,
-    location: hosted
+    location: { ...(hosted
       ? { origin: 'https://fullmetalsonic.github.io', pathname: '/webcarrot-offline-demo/' }
-      : { origin: 'https://example.invalid', pathname: '/' },
-    window: { localStorage, addEventListener(type, listener) { listen('window', type, listener); }, scrollTo() {} },
+      : { origin: 'https://example.invalid', pathname: '/' }), assign(url) { navigations.push(url); } },
+    window: { localStorage, sessionStorage, addEventListener(type, listener) { listen('window', type, listener); }, scrollTo() {} },
   });
-  vm.runInContext(script.replace(startup, ''), context);
+  vm.runInContext(executeStartup ? script : script.replace(startup, ''), context);
   const run = source => vm.runInContext(source, context);
-  run("state.backup=defaultBackup();state.tab='drive';initNavHistory()");
+  if (!executeStartup) run("initializeBackup();state.tab='drive';initNavHistory()");
   const params = JSON.parse(run('JSON.stringify(PARAMS)'));
   const numeric = params.filter(p => p.name !== 'SoundLanguageSetting' && getSettingControlConfig(p).kind === 'slider');
   function dispatch(type, target, data = {}, owner = 'document') {
     const event = { target, preventDefault() { this.defaultPrevented = true; }, stopPropagation() {}, ...data };
-    for (const listener of listeners.get(`${owner}:${type}`) || []) listener(event);
+    event.completion = Promise.all((listeners.get(`${owner}:${type}`) || []).map(listener => listener(event)));
     return event;
   }
   const button = dataset => ({ dataset, closest() { return this; }, classList: { add() {}, remove() {} } });
@@ -188,13 +199,20 @@ function loadDemo({ storage = new Map(), storageBlocked = false, hosted = false 
     click({ step: p.name, delta: String(values[sign > 0 ? 1 : 0]) });
   }
   const param = name => params.find(p => p.name === name);
-  async function importText(text) {
-    context.fixtureText = text;
-    await run('importBackup({name:"fixture.json",text:async()=>fixtureText})');
+  function chooseFile(file) {
+    const input = element('fileInput');
+    input.files = file ? [file] : [];
+    input.value = file?.name || '';
+    return dispatch('change', input, {}, 'fileInput').completion;
+  }
+  async function importText(text, name = 'fixture.json') {
+    await chooseFile({ name, text: async () => text });
   }
   async function exportedText() {
-    run('exportBackup()');
-    return exportedBlob.text();
+    const before = downloads.length;
+    click({ action: 'export' });
+    assert.equal(downloads.length, before + 1, 'export action creates one actual Blob download');
+    return downloads.at(-1).blob.text();
   }
   function direct(p, value) {
     click({ edit: p.name });
@@ -202,8 +220,8 @@ function loadDemo({ storage = new Map(), storageBlocked = false, hosted = false 
     input.value = String(value);
     dispatch('click', element('choiceApply'), {}, 'choiceApply');
   }
-  return { run, params, numeric, element, dispatch, click, button, advance, confirmations, param,
-    control, card, setRaw, selectStep, press, direct, importText, exportedText,
+  return { run, params, numeric, element, dispatch, click, button, advance, confirmations, downloads, navigations, session, sessionFailure, historyEntries, param,
+    control, card, setRaw, selectStep, press, direct, chooseFile, importText, exportedText,
     importJson: fixture => importText(JSON.stringify(fixture)), confirmAnswer(value) { confirmAnswer = value; },
     async exported() { return JSON.parse(await exportedText()); } };
 }
@@ -506,7 +524,7 @@ test('Numeric steps remain available with imported fractional, out-of-range and 
   }
 });
 
-test('Unchanged edits keep original types and missing keys; a changed reset requires confirmation', async () => {
+test('Unchanged stored values keep original types; explicit missing-key edits and changed resets are deliberate', async () => {
   const demo = loadDemo(), p = demo.param('VEgoStopping');
   const fixture = { VEgoStopping: 50, ClusterHudScreenMode: 0, CanfdHDA2: true, VehicleNaviSchoolZoneControl: 'True' };
   await demo.importJson(fixture);
@@ -514,30 +532,34 @@ test('Unchanged edits keep original types and missing keys; a changed reset requ
   demo.click({ default: p.name });
   demo.click({ choice: 'ClusterHudScreenMode' });
   demo.click({ choiceValue: '0' });
+  demo.click({ edit: 'StopDistanceCarrot' });
+  demo.dispatch('click', demo.element('choiceCancel'), {}, 'choiceCancel');
+  assert.deepEqual(await demo.exported(), fixture, 'viewing and canceling a missing default does not add it');
   demo.direct(demo.param('StopDistanceCarrot'), 600);
   demo.click({ default: 'StopDistanceCarrot' });
   demo.click({ set: 'CanfdHDA2', value: '1' });
   demo.click({ set: 'VehicleNaviSchoolZoneControl', value: '1' });
-  assert.deepEqual(await demo.exported(), fixture);
-  assert.equal(demo.run('state.dirty.size'), 0);
+  const explicit = { ...fixture, StopDistanceCarrot: '600' };
+  assert.deepEqual(await demo.exported(), explicit, 'applying a missing setting writes the requested default');
+  assert.equal(demo.run('state.dirty.size'), 1);
   assert.equal(demo.confirmations.length, 0);
   demo.direct(p, 51.6);
   demo.confirmAnswer(false);
   demo.click({ default: p.name });
-  assert.deepEqual(await demo.exported(), { ...fixture, VEgoStopping: '52' });
+  assert.deepEqual(await demo.exported(), { ...explicit, VEgoStopping: '52' });
   assert.equal(demo.confirmations.length, 1);
   demo.confirmAnswer(true);
   demo.click({ default: p.name });
-  assert.deepEqual(await demo.exported(), { ...fixture, VEgoStopping: '50' });
+  assert.deepEqual(await demo.exported(), { ...explicit, VEgoStopping: '50' });
   assert.equal(demo.confirmations.length, 2);
   demo.click({ set: 'CanfdHDA2', value: '0' });
   demo.click({ set: 'VehicleNaviSchoolZoneControl', value: '0' });
-  assert.deepEqual(await demo.exported(), { ...fixture, VEgoStopping: '50', CanfdHDA2: '0', VehicleNaviSchoolZoneControl: '0' });
+  assert.deepEqual(await demo.exported(), { ...explicit, VEgoStopping: '50', CanfdHDA2: '0', VehicleNaviSchoolZoneControl: '0' });
 });
 
 test('Untouched numeric tokens retain precision through import, display and export', async () => {
-  const storage = new Map();
-  const demo = loadDemo({ storage, hosted: true }), p = demo.param('VEgoStopping');
+  const storage = new Map(), session = new Map();
+  const demo = loadDemo({ storage, session, hosted: true }), p = demo.param('VEgoStopping');
   const precision = '50.625000000000000000123';
   const future = '{"count":9007199254740993,"array":[false,1.234567890123456789012345,null]}';
   await demo.importText(`{"VEgoStopping":${precision},"FutureUnknown":${future}}`);
@@ -555,10 +577,10 @@ test('Untouched numeric tokens retain precision through import, display and expo
   assert.match(edited, /\b1\.234567890123456789012345\b/);
   assert.deepEqual(Object.keys(JSON.parse(edited)), ['VEgoStopping', 'FutureUnknown']);
   demo.run('storePendingUpdate(DEMO_VERSION)');
-  const reopened = loadDemo({ storage, hosted: true });
+  const reopened = loadDemo({ storage, session, hosted: true });
   reopened.run('restorePendingUpdate()');
   assert.equal(await reopened.exportedText(), edited);
-  assert.equal(reopened.run('localStorage.getItem(UPDATE_BACKUP_KEY)'), null);
+  assert.equal(reopened.run('sessionStorage.getItem(UPDATE_BACKUP_KEY)'), null);
 });
 
 // web/src/ui/components/commit_gesture.js defines the timing and 10px movement tolerance.
@@ -693,4 +715,388 @@ test('Search input remains mounted while filtering and existing choice/toggle ed
   demo.run('openChoice("ShowModelView")');
   demo.click({ choiceValue: '3' });
   assert.equal(demo.run('state.backup.ShowModelView'), '3');
+});
+
+function deferred() {
+  let resolve, reject;
+  const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
+  return { promise, resolve, reject };
+}
+
+function beginImport(demo, name = 'pending.json') {
+  const read = deferred();
+  return { ...read, done: demo.chooseFile({ name, text: () => read.promise }) };
+}
+
+function backupStatus(demo) {
+  return demo.element('backupStatus').innerHTML + demo.run('renderTools()');
+}
+
+test('Actual file input commits the last selected file when reads finish in reverse order', async () => {
+  const demo = loadDemo(), first = beginImport(demo, 'A.json'), last = beginImport(demo, 'B.json');
+  last.resolve('{"StopDistanceCarrot":"800","BOnly":true}');
+  await last.done;
+  first.resolve('{"StopDistanceCarrot":"400","AOnly":true}');
+  await first.done;
+  assert.deepEqual(await demo.exported(), { StopDistanceCarrot: '800', BOnly: true });
+  assert.match(demo.element('toast').textContent, /B\.json|내보냄/);
+  assert.equal(demo.element('fileInput').value, '');
+});
+
+test('A failed last selection cannot revive an older in-flight import', async () => {
+  const demo = loadDemo();
+  await demo.importText('{"StopDistanceCarrot":"700","Keep":9007199254740993}', 'committed.json');
+  const before = await demo.exportedText();
+  const old = beginImport(demo, 'A.json'), latest = beginImport(demo, 'B.json');
+  latest.resolve('{broken');
+  await latest.done;
+  old.resolve('{"StopDistanceCarrot":"400","Stale":true}');
+  await old.done;
+  assert.equal(await demo.exportedText(), before);
+  assert.equal(demo.run('state.dirty.size'), 0);
+});
+
+test('An import in progress blocks download, value edits, reset and new-demo actions', async () => {
+  const demo = loadDemo();
+  await demo.importJson({ StopDistanceCarrot: '700', Keep: [true, null] });
+  const pending = beginImport(demo);
+  demo.click({ action: 'export' });
+  assert.equal(demo.downloads.length, 0, 'no download can misrepresent the pending file as loaded');
+  demo.click({ set: 'StopDistanceCarrot', value: '750' });
+  demo.click({ default: 'StopDistanceCarrot' });
+  demo.click({ action: 'new' });
+  assert.equal(demo.run('state.backup.StopDistanceCarrot'), '700');
+  assert.equal(demo.run('state.dirty.size'), 0);
+  pending.resolve('{"StopDistanceCarrot":"800","New":false}');
+  await pending.done;
+  assert.deepEqual(await demo.exported(), { StopDistanceCarrot: '800', New: false });
+});
+
+test('Read failures retain the last committed bytes and display an uncommitted-file warning', async () => {
+  const demo = loadDemo();
+  await demo.importText('{"StopDistanceCarrot":700,"exact":1.234567890123456789}', 'kept.json');
+  const before = await demo.exportedText(), failed = beginImport(demo, 'unreadable.json');
+  failed.reject(new Error('read failed'));
+  await failed.done;
+  assert.match(demo.element('toast').textContent, /실패|불러오지/);
+  assert.equal(await demo.exportedText(), before);
+  const tools = backupStatus(demo);
+  assert.match(tools, /kept\.json/);
+  assert.match(tools, /unreadable\.json/);
+  assert.match(tools, /실패|미반영|불러오지|유지/);
+});
+
+test('Replacing a dataset closes numeric editors and rejects their old history entries', async () => {
+  const demo = loadDemo();
+  await demo.importJson({ StopDistanceCarrot: '600' });
+  demo.click({ edit: 'StopDistanceCarrot' });
+  demo.element('choiceNumber').value = '650';
+  const oldEntry = structuredClone(demo.historyEntries.at(-1));
+  await demo.importJson({ StopDistanceCarrot: '800', NewFile: true });
+  assert.equal(demo.element('choiceOverlay').hidden, true);
+  demo.dispatch('click', demo.element('choiceApply'), {}, 'choiceApply');
+  demo.dispatch('popstate', null, { state: oldEntry }, 'window');
+  assert.equal(demo.element('choiceOverlay').hidden, true, 'history never revives an editor for a different dataset');
+  assert.equal(demo.run('state.choice'), null);
+  assert.deepEqual(await demo.exported(), { StopDistanceCarrot: '800', NewFile: true });
+});
+
+test('Replacing a dataset invalidates the car confirmation and stale update dialog', async () => {
+  const demo = loadDemo({ hosted: true });
+  await demo.importJson({ CarSelected3: 'original car' });
+  demo.click({ action: 'car' });
+  demo.run('chooseCar("Ford Escape 2020-22")');
+  const carEntry = structuredClone(demo.historyEntries.at(-1));
+  demo.run('updateState.latest="99.0.0";updateState.assetUrl="https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/download/v99.0.0/webcarrot-offline-demo.html";renderUpdateDialog()');
+  const updateEntry = structuredClone(demo.historyEntries.at(-1));
+  await demo.importJson({ CarSelected3: 'new car', Keep: true });
+  assert.equal(demo.element('carModal').hidden, true);
+  assert.equal(demo.element('updateOverlay').hidden, true);
+  demo.dispatch('click', demo.element('confirmYes'), {}, 'confirmYes');
+  for (const entry of [carEntry, updateEntry]) demo.dispatch('popstate', null, { state: entry }, 'window');
+  assert.equal(demo.element('carModal').hidden, true);
+  assert.equal(demo.element('updateOverlay').hidden, true);
+  assert.deepEqual(await demo.exported(), { CarSelected3: 'new car', Keep: true });
+});
+
+test('Ordinary refresh restores raw tokens, types, absent keys, large unknown data and explicit edits', async () => {
+  const session = new Map(), demo = loadDemo({ session, startup: true });
+  const payload = 'future'.repeat(12000);
+  const raw = `{"StopDistanceCarrot":700,"VEgoStopping":50.625000000000000000123,"Future":{"integer":9007199254740993,"ratio":1.234567890123456789012345,"nested":[true,false,null," 001 ","${payload}"]},"Null":null,"Toggle":true}`;
+  await demo.importText(raw, '설정 원본.json');
+  demo.click({ set: 'StopDistanceCarrot', value: '750' });
+  const before = await demo.exportedText();
+  demo.dispatch('pagehide', null, {}, 'window');
+  const refreshed = loadDemo({ session, startup: true });
+  assert.equal(await refreshed.exportedText(), before);
+  assert.match(before, /50\.625000000000000000123/);
+  assert.match(before, /9007199254740993/);
+  assert.match(before, /1\.234567890123456789012345/);
+  assert.equal(refreshed.run('state.dirty.has("StopDistanceCarrot")'), true);
+  assert.match(backupStatus(refreshed), /설정 원본\.json/);
+  assert.equal(Object.hasOwn(await refreshed.exported(), 'PathOffset'), false);
+});
+
+test('Session quota failures preserve memory and downloads and warn before leaving', async () => {
+  const sessionFailure = { write: true }, demo = loadDemo({ sessionFailure, startup: true });
+  await demo.importText('{"StopDistanceCarrot":700,"Unknown":9007199254740993}', 'quota.json');
+  demo.click({ set: 'StopDistanceCarrot', value: '750' });
+  assert.match(backupStatus(demo), /저장|보관|복구/);
+  assert.match(backupStatus(demo), /실패|못|불가|초과|차단/);
+  assert.equal((await demo.exported()).StopDistanceCarrot, '750');
+  assert.match(await demo.exportedText(), /9007199254740993/);
+  const leave = demo.dispatch('beforeunload', null, {}, 'window');
+  assert.equal(leave.defaultPrevented, true, 'unsaved in-memory work requests the browser leave warning');
+  sessionFailure.write = false;
+  demo.click({ set: 'StopDistanceCarrot', value: '760' });
+  const refreshed = loadDemo({ session: demo.session, startup: true });
+  assert.equal((await refreshed.exported()).StopDistanceCarrot, '760');
+});
+
+test('Corrupt or unreadable session drafts never silently export defaults and can recover via import or new', async () => {
+  for (const [raw, sessionFailure] of [['{bad', {}], ['null', {}], ['{"format":1,"json":"[]"}', {}], [null, { read: true }]]) {
+    const session = new Map(raw === null ? [] : [['webcarrot-offline-demo:backup-draft:v1', raw]]);
+    const demo = loadDemo({ session, sessionFailure, startup: true });
+    demo.click({ action: 'export' });
+    demo.click({ set: 'StopDistanceCarrot', value: '750' });
+    assert.equal(demo.downloads.length, 0, 'unreadable draft is not silently replaced by an exportable default dataset');
+    assert.match(backupStatus(demo), /복구|손상|읽|확인/);
+    sessionFailure.read = false;
+    await demo.importText('{"StopDistanceCarrot":"720","Recovered":true}', 'recover.json');
+    assert.deepEqual(await demo.exported(), { StopDistanceCarrot: '720', Recovered: true });
+  }
+  const demo = loadDemo({ session: new Map([['webcarrot-offline-demo:backup-draft:v1', '{bad']]), startup: true });
+  demo.click({ action: 'new' });
+  assert.equal(Object.keys(await demo.exported()).length, 212);
+});
+
+test('A stale tab pagehide cannot replace another tab update handoff or draft', async () => {
+  const storage = new Map(), oneSession = new Map(), twoSession = new Map();
+  const one = loadDemo({ storage, session: oneSession, hosted: true, startup: true });
+  await one.importJson({ StopDistanceCarrot: '700', One: true });
+  one.run('storePendingUpdate("99.0.0")');
+  const two = loadDemo({ storage, session: twoSession, hosted: true, startup: true });
+  await two.importJson({ StopDistanceCarrot: '900', Two: true });
+  two.run('storePendingUpdate("99.0.0")');
+  const sharedBefore = JSON.stringify([...storage]);
+  one.click({ set: 'StopDistanceCarrot', value: '750' });
+  one.dispatch('pagehide', null, {}, 'window');
+  two.dispatch('pagehide', null, {}, 'window');
+  assert.equal(JSON.stringify([...storage]), sharedBefore, 'pagehide does not write to another tab shared handoff');
+  assert.deepEqual(await loadDemo({ storage, session: oneSession, hosted: true, startup: true }).exported(), { StopDistanceCarrot: '750', One: true });
+  assert.deepEqual(await loadDemo({ storage, session: twoSession, hosted: true, startup: true }).exported(), { StopDistanceCarrot: '900', Two: true });
+});
+
+test('Explicit gap correction writes raw 4 to 3 while view and cancel retain the raw value', async () => {
+  const demo = loadDemo();
+  const fixture = { LongitudinalPersonalityMax: '3', CruiseGapLevels: 4, Unknown: null };
+  await demo.importJson(fixture);
+  demo.click({ choice: 'CruiseGapLevels' });
+  demo.dispatch('click', demo.element('choiceCancel'), {}, 'choiceCancel');
+  assert.deepEqual(await demo.exported(), fixture);
+  demo.click({ choice: 'CruiseGapLevels' });
+  demo.click({ choiceValue: '3' });
+  assert.deepEqual(await demo.exported(), { ...fixture, CruiseGapLevels: '3' });
+  await demo.importJson(fixture);
+  demo.click({ default: 'CruiseGapLevels' });
+  assert.deepEqual(await demo.exported(), { ...fixture, CruiseGapLevels: '3' });
+});
+
+test('Exports use a distinct official source identifier, original filename and collision-free timestamps', async () => {
+  const demo = loadDemo();
+  await demo.importText('{"StopDistanceCarrot":700}', '../원본 설정?.json');
+  await demo.exportedText();
+  await demo.exportedText();
+  const names = demo.downloads.map(item => item.name);
+  assert.notEqual(names[0], names[1], 'same-millisecond exports have distinct filenames');
+  for (const name of names) {
+    assert.match(name, /webcarrot_official/);
+    assert.match(name, /0df83618/);
+    assert.match(name, /원본_설정/);
+    assert.doesNotMatch(name, /[\\/<>:"|?*]/);
+  }
+  assert.match(backupStatus(demo), /\.\.\/원본 설정\?\.json/);
+});
+
+test('Unknown-only flat objects remain valid and wrapper-shaped objects are preserved with a warning', async () => {
+  const demo = loadDemo();
+  const flat = { FutureA: '001', FutureB: 50, FutureC: true, FutureD: null };
+  await demo.importJson(flat);
+  assert.deepEqual(await demo.exported(), flat);
+  for (const wrapper of [{ params: { StopDistanceCarrot: '700' } }, { backup: { StopDistanceCarrot: 700 }, version: 2 }]) {
+    await demo.importJson(wrapper);
+    assert.match(demo.element('toast').textContent + demo.element('backupStatus').innerHTML, /중첩|래퍼|wrapper|구조/);
+    assert.deepEqual(await demo.exported(), wrapper, 'warning never unwraps or discards an unknown object');
+  }
+});
+
+test('New demo and canceled file selection preserve deliberate lifecycle boundaries', async () => {
+  const session = new Map(), demo = loadDemo({ session, startup: true });
+  await demo.importJson({ StopDistanceCarrot: 700, Unknown: 'keep' });
+  const before = await demo.exportedText();
+  await demo.chooseFile(null);
+  assert.equal(await demo.exportedText(), before, 'canceling the native chooser changes nothing');
+  demo.confirmAnswer(false);
+  demo.click({ action: 'new' });
+  assert.equal(await demo.exportedText(), before);
+  demo.confirmAnswer(true);
+  demo.click({ action: 'new' });
+  const defaults = await demo.exportedText();
+  assert.equal(Object.keys(JSON.parse(defaults)).length, 212);
+  assert.equal(Object.hasOwn(JSON.parse(defaults), 'Unknown'), false);
+  assert.equal(await loadDemo({ session, startup: true }).exportedText(), defaults, 'explicit new demo replaces the saved draft');
+});
+
+test('JSON edge tokens survive actual import events and malformed replacements leave committed data intact', async () => {
+  const demo = loadDemo();
+  const raw = String.raw`{"__proto__":{"kept":true},"constructor":"own","duplicate":1,"duplicate":9007199254740993,"negativeZero":-0,"huge":1e400,"exponent":1.234567890123456789e-300,"escaped":"  \uD55C\uAE00 quotes\" and slash\\ and comma, colon: brace}  ","StopDistanceCarrot":"700"}`;
+  await demo.importText(raw);
+  const before = await demo.exportedText();
+  for (const token of ['9007199254740993', '-0', '1e400', '1.234567890123456789e-300']) assert.ok(before.includes(token), token);
+  assert.equal(Object.hasOwn(JSON.parse(before), '__proto__'), true);
+  assert.equal(JSON.parse(before).constructor, 'own');
+  for (const malformed of ['null', '[]', 'true', '17', '"text"', '{"bad":NaN}', '{"bad":1,}', '{"bad":"unterminated}']) {
+    await demo.importText(malformed, 'invalid.json');
+    assert.match(demo.element('toast').textContent, /실패|불러오지/);
+    assert.equal(await demo.exportedText(), before, malformed);
+  }
+});
+
+test('A pointer gesture in flight cannot edit a newly imported dataset or a new demo', async () => {
+  for (const replacement of ['import', 'new']) {
+    const demo = loadDemo();
+    await demo.importJson({ StopDistanceCarrot: '700', Unknown: true });
+    const target = demo.button({ step: 'StopDistanceCarrot', delta: '1' });
+    demo.dispatch('pointerdown', target, { pointerId: 7, button: 0, clientX: 0, clientY: 0 });
+    if (replacement === 'import') await demo.importJson({ StopDistanceCarrot: '900', Replacement: true });
+    else demo.click({ action: 'new' });
+    const committed = await demo.exportedText();
+    demo.advance(1500);
+    demo.dispatch('pointerup', target, { pointerId: 7 });
+    // Keep the VM target connected to also exercise the dataset guard for an overdue click echo.
+    demo.dispatch('click', target, { detail: 1 });
+    assert.equal(await demo.exportedText(), committed, replacement + ': held timer, release and synthetic click cannot replay an old edit');
+  }
+});
+
+test('Stored BOOL coercion and inferred BOOL controls follow the official restore service without changing raw types', async () => {
+  const demo = loadDemo();
+  // Pinned params-service.py _coerce_bool: string true/1/yes/on, otherwise scalar truthiness.
+  // VehicleNaviSchoolZoneControl and SoftHoldOnCancel are native BOOL; these two display keys infer BOOL.
+  for (const name of ['VehicleNaviSchoolZoneControl', 'SoftHoldOnCancel', 'ShowPathEnd', 'ShowRouteInfo']) {
+    const p = demo.param(name);
+    assert.deepEqual([p.min, p.max], [0, 1]);
+    for (const raw of ['yes', 'ON', 'true', '1', 'false', 'off', '0', 'unexpected', 2, -1, 0, true, false]) {
+      const expected = typeof raw === 'string' ? ['true', '1', 'yes', 'on'].includes(raw.toLowerCase()) : Boolean(raw);
+      const fixture = { [name]: raw, Unknown: { original: true } };
+      await demo.importJson(fixture);
+      assert.match(demo.control(p), new RegExp(`aria-checked="${expected}"`), name + ': ' + JSON.stringify(raw));
+      assert.deepEqual(await demo.exported(), fixture, 'display keeps the original token/type');
+      demo.click({ set: name, value: expected ? '0' : '1' });
+      assert.deepEqual(await demo.exported(), { ...fixture, [name]: expected ? '0' : '1' });
+    }
+  }
+});
+
+test('Native INT binary controls do not present invalid boolean strings as a successfully restored ON value', async () => {
+  const demo = loadDemo(), p = demo.param('CanfdHDA2');
+  // Native INT in pinned common/params_keys.h; official restore int(value) rejects "True"/"yes".
+  for (const raw of ['True', 'yes', 'false', 'legacy', '0x1', '0b1', '']) {
+    const fixture = { CanfdHDA2: raw, Unknown: null };
+    await demo.importJson(fixture);
+    assert.doesNotMatch(demo.control(p), /aria-checked="true"/, raw + ': no misleading ON state');
+    assert.match(demo.card(p), /유효|형식|복원|정수|지원하지/, 'invalid integer backup is visibly marked');
+    assert.deepEqual(await demo.exported(), fixture);
+    demo.click({ set: p.name, value: '1' });
+    assert.deepEqual(await demo.exported(), { ...fixture, CanfdHDA2: '1' });
+  }
+  for (const [raw, restored] of [[0.5, 0], [1.5, 2], [-0.5, 0]]) {
+    const fixture = { CanfdHDA2: raw, Unknown: null };
+    await demo.importJson(fixture);
+    assert.equal(demo.run('controlValue(BY_NAME.get("CanfdHDA2"))'), restored, 'native INT restore rounds ties to even');
+    assert.deepEqual(await demo.exported(), fixture);
+    demo.click({ set: p.name, value: '1' });
+    assert.deepEqual(await demo.exported(), { ...fixture, CanfdHDA2: '1' });
+  }
+});
+
+test('Repeated imports of the same filename clear only the committed dataset edits and chooser cancel keeps a pending read', async () => {
+  const demo = loadDemo();
+  await demo.importText('{"StopDistanceCarrot":700,"First":true}', 'same.json');
+  demo.click({ set: 'StopDistanceCarrot', value: '750' });
+  assert.equal(demo.run('state.dirty.size'), 1);
+  const pending = beginImport(demo, 'same.json');
+  await demo.chooseFile(null);
+  pending.resolve('{"StopDistanceCarrot":800,"Second":true}');
+  await pending.done;
+  assert.deepEqual(await demo.exported(), { StopDistanceCarrot: 800, Second: true });
+  assert.equal(demo.run('state.dirty.size'), 0);
+  await demo.importText('{"StopDistanceCarrot":900,"Third":true}', 'same.json');
+  assert.deepEqual(await demo.exported(), { StopDistanceCarrot: 900, Third: true });
+});
+
+test('Pending import blocks old car confirmation and hosted update navigation without losing the last backup', async () => {
+  const demo = loadDemo({ hosted: true });
+  await demo.importJson({ CarSelected3: 'original car', StopDistanceCarrot: '700' });
+  demo.click({ action: 'car' });
+  demo.run('chooseCar("Ford Escape 2020-22");updateState.latest="99.0.0";updateState.assetUrl="https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/download/v99.0.0/webcarrot-offline-demo.html"');
+  const pending = beginImport(demo);
+  demo.dispatch('click', demo.element('confirmYes'), {}, 'confirmYes');
+  demo.click({ action: 'applyHostedUpdate' });
+  demo.click({ action: 'saveUpdateBackup' });
+  assert.equal(demo.run('state.backup.CarSelected3'), 'original car');
+  assert.equal(demo.navigations.length, 0);
+  assert.equal(demo.downloads.length, 0);
+  pending.resolve('{"CarSelected3":"replacement car"}');
+  await pending.done;
+  assert.deepEqual(await demo.exported(), { CarSelected3: 'replacement car' });
+});
+
+test('Hosted update refuses navigation after storage failure and retains the exportable in-memory data', async () => {
+  const demo = loadDemo({ sessionFailure: { write: true }, hosted: true, startup: true });
+  await demo.importText('{"StopDistanceCarrot":"700","Unknown":9007199254740993}', 'unsaved.json');
+  demo.run('updateState.latest="99.0.0";updateState.assetUrl="https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/download/v99.0.0/webcarrot-offline-demo.html"');
+  demo.click({ action: 'applyHostedUpdate' });
+  assert.equal(demo.navigations.length, 0);
+  assert.match(demo.element('toast').textContent, /못|실패|백업|내보내/);
+  assert.match(await demo.exportedText(), /9007199254740993/);
+});
+
+test('Explicit defaults insert missing keys while viewing and canceled edits leave them absent', async () => {
+  const demo = loadDemo(), fixture = { Unknown: { exact: true } };
+  for (const [name, value] of [['StopDistanceCarrot', '600'], ['CanfdHDA2', '0'], ['ShowModelView', '0'], ['CruiseGapLevels', '3']]) {
+    await demo.importJson(fixture);
+    demo.click({ action: 'detail:' + name });
+    assert.deepEqual(await demo.exported(), fixture);
+    demo.click({ default: name });
+    assert.deepEqual(await demo.exported(), { ...fixture, [name]: value });
+  }
+  await demo.importJson(fixture);
+  demo.click({ set: 'CanfdHDA2', value: '0' });
+  assert.deepEqual(await demo.exported(), { ...fixture, CanfdHDA2: '0' });
+  for (const raw of ['True', '0x1', '']) {
+    await demo.importJson({ CanfdHDA2: raw });
+    demo.click({ set: 'CanfdHDA2', value: '0' });
+    assert.deepEqual(await demo.exported(), { CanfdHDA2: '0' }, 'explicit OFF canonicalizes an invalid stored integer');
+  }
+});
+
+test('Draft metadata corruption is blocked and cleanup failures never destroy restored raw data', async () => {
+  const key = 'webcarrot-offline-demo:backup-draft:v1', session = new Map();
+  const seed = loadDemo({ session, hosted: true, startup: true });
+  await seed.importText('{"StopDistanceCarrot":700,"Unknown":9007199254740993}', 'saved.json');
+  const valid = JSON.parse(session.get(key));
+  for (const patch of [{ format: 2 }, { id: '' }, { revision: -1 }, { sourceName: {} }, { imported: 'yes' },
+    { sourceRecognized: -1 }, { dirty: [1] }, { dirty: ['missing'] }, { json: '{bad' }, { json: '[]' }]) {
+    const corrupt = new Map([[key, JSON.stringify({ ...valid, ...patch })]]);
+    const demo = loadDemo({ session: corrupt, startup: true });
+    demo.click({ action: 'export' });
+    assert.equal(demo.downloads.length, 0, JSON.stringify(patch));
+    assert.match(backupStatus(demo), /손상|확인|복원|차단/);
+  }
+  seed.run('storePendingUpdate(DEMO_VERSION)');
+  session.delete(key); // Exercise the real startup handoff path when no ordinary draft is available.
+  const removeFailure = loadDemo({ session, sessionFailure: { remove: true }, hosted: true, startup: true });
+  assert.match(backupStatus(removeFailure), /정리|실패|못/);
+  assert.match(await removeFailure.exportedText(), /9007199254740993/);
 });
