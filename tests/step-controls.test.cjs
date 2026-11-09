@@ -7,7 +7,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 // Frozen oracles from openpilot/selfdrive/carrot at this official commit.
-const OFFICIAL_SHA = '0df83618f196357165a29218c9a588b0131c7d20';
+const OFFICIAL_SHA = 'e318f767ff7dc96d25a3bcc2b46f9f3daf6e9e42';
 // web/js/pages/setting.js:781 and web/src/ui/components/numeric_stepper/numeric_stepper.js:18.
 // Official config.py UNIT_CYCLE; this is the actual increment, not p.unit times it.
 const EXPECTED_STEPS = [1, 2, 5, 10, 50, 100];
@@ -107,7 +107,7 @@ function normalizeSettingNumericValue(raw, p, previous = null) {
 }
 
 
-function loadDemo({ storage = new Map(), storageBlocked = false, session = new Map(), sessionFailure = {}, hosted = false, search = '', href, startup: executeStartup = false, navEntries = [] } = {}) {
+function loadDemo({ storage = new Map(), storageBlocked = false, storageFailure = {}, session = new Map(), sessionFailure = {}, hosted = false, search = '', href, startup: executeStartup = false, navEntries = [] } = {}) {
   const html = fs.readFileSync(process.env.WEBCARROT_TEST_HTML || path.join(__dirname, '..', 'index.html'), 'utf8');
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
   const startup = 'initializeBackup();render();initNavHistory();checkForUpdate();';
@@ -161,14 +161,14 @@ function loadDemo({ storage = new Map(), storageBlocked = false, session = new M
     static now() { return now; }
   }
   const localStorage = {
-    getItem(key) { if (storageBlocked) throw new Error('storage blocked'); return storage.get(key) ?? null; },
-    setItem(key, value) { if (storageBlocked) throw new Error('storage blocked'); storage.set(key, String(value)); },
-    removeItem(key) { if (storageBlocked) throw new Error('storage blocked'); storage.delete(key); },
+    getItem(key) { if (storageBlocked || storageFailure.readKeys?.includes(key)) throw new Error('storage blocked'); return storage.get(key) ?? null; },
+    setItem(key, value) { if (storageBlocked || storageFailure.writeKeys?.includes(key)) throw new Error('storage blocked'); storage.set(key, String(value)); },
+    removeItem(key) { if (storageBlocked || storageFailure.removeKeys?.includes(key)) throw new Error('storage blocked'); storage.delete(key); },
   };
   const sessionStorage = {
-    getItem(key) { if (sessionFailure.read) throw new Error('session read blocked'); return session.get(key) ?? null; },
+    getItem(key) { if (sessionFailure.read || sessionFailure.readKeys?.includes(key)) throw new Error('session read blocked'); return session.get(key) ?? null; },
     setItem(key, value) { if (sessionFailure.write || sessionFailure.writeKeys?.includes(key)) throw new Error('session quota exceeded'); session.set(key, String(value)); },
-    removeItem(key) { if (sessionFailure.remove) throw new Error('session removal blocked'); session.delete(key); },
+    removeItem(key) { if (sessionFailure.remove || sessionFailure.removeKeys?.includes(key)) throw new Error('session removal blocked'); session.delete(key); },
   };
   const location = new TestURL(href || ((hosted ? 'https://fullmetalsonic.github.io/webcarrot-offline-demo/' : 'https://example.invalid/') + search));
   location.assign = url => navigations.push(url);
@@ -249,7 +249,7 @@ function loadDemo({ storage = new Map(), storageBlocked = false, session = new M
     input.value = String(value);
     dispatch('click', element('choiceApply'), {}, 'choiceApply');
   }
-  return { run, params, numeric, element, dispatch, click, button, advance, confirmations, downloads, navigations, session, sessionFailure, historyEntries, historyURLs, location, param,
+  return { run, params, numeric, element, dispatch, click, button, advance, confirmations, downloads, navigations, session, sessionFailure, storageFailure, historyEntries, historyURLs, location, param,
     control, card, setRaw, selectStep, press, direct, chooseFile, importText, exportedText,
     importJson: fixture => importText(JSON.stringify(fixture)), confirmAnswer(value) { confirmAnswer = value; },
     async exported() { return JSON.parse(await exportedText()); } };
@@ -264,7 +264,14 @@ test('Embedded settings schema and menu match the frozen official source', () =>
   const demo = loadDemo();
   assert.equal(demo.run('SOURCE_SHA'), OFFICIAL_SHA);
   const schemaDigest = createHash('sha256').update(demo.run('JSON.stringify(SCHEMA)')).digest('hex');
-  assert.equal(schemaDigest, '3934387ed6e9112675b369421a1972cb273fab1fbafd19e2943a6c7150bd0574');
+  assert.equal(schemaDigest, '59f2d0cbba161c642441edc44546ad714a563343547646da70d6e1cc56298f70');
+  // Frozen independently from carrot_settings.json Git blob 24b31a01c7304a5a26edbfc492d3b4535affdadc.
+  const alwaysLateralDescriptions = {
+    descr: '크루즈가 켜져있지 않아도 조향제어를 허용합니다.\n시스템 시작 후 최초 입력 준비 확인 전에는 조향하지 않습니다. 한 번 통과하면 이 검사는 다시 차단하지 않으며 기존 주행 중 안전 처리는 유지됩니다.\nTesla는 실제 정차 시에도 조향할 수 있으며, 저속 이동 중 조향 제한은 유지됩니다.\n차량 CAN 확장이 있는 Tesla는 화면의 세 손가락 접촉마다 이 설정을 즉시 전환합니다. 실험 모드는 바뀌지 않습니다. 끄더라도 활성 크루즈의 조향까지 해제하지는 않습니다.\n지속적인 CAN 제어기 오류 또는 반복되는 캐스퍼 전방 안전 시스템 오류가 확인되면 경고와 함께 상시 조향도 해제되며, 오류가 해소되기 전에는 다시 켤 수 없습니다.\n0: 끄기, 1: 켜기',
+    edescr: 'Allow lateral control even when cruise is not active.\nSteering waits for initial input readiness after system startup. Once passed, this check does not block again; existing runtime safety handling remains unchanged.\nTesla can steer at true standstill; minimum steering-speed limits still apply while moving.\nOn Tesla with the vehicle CAN extension, each distinct three-finger screen contact toggles this setting live, not Experimental Mode. OFF does not disengage steering under active cruise.\nConfirmed persistent CAN-controller errors or recurring Casper front-safety-system faults trigger an alert and disable always-on steering too; re-engagement is blocked until the fault clears.\n0: OFF, 1: ON',
+    cdescr: '即使巡航未激活，也允许横向控制。\n系统启动后，首次确认所需输入就绪前不执行转向。一旦通过，此启动检查不再阻断；现有行驶中安全处理保持不变。\nTesla 在实际静止时可以转向；低速移动时仍遵守最低转向速度限制。\n有车辆 CAN 扩展的 Tesla，每次独立三指触屏立即切换此设置，不再切换实验模式。关闭不等于解除已激活巡航中的转向控制。\n确认持续的 CAN 控制器错误或反复出现的 Casper 前方安全系统故障时，会发出警报并停止全时转向；故障解除前不能重新启用。\n0: 关闭, 1: 开启',
+  };
+  for (const [field, text] of Object.entries(alwaysLateralDescriptions)) assert.equal(demo.param('AlwaysLateral')[field], text, 'AlwaysLateral.' + field);
   assert.equal(demo.params.length, 212);
   assert.equal(demo.numeric.length, 102);
   assert.equal(demo.run('Object.values(CAR_CATALOG).flat().length'), 333);
@@ -1059,6 +1066,232 @@ test('Legacy update fresh landings offer the newest candidate while preserving e
   }
 });
 
+const TRANSITION_BACKUPS = {
+  A: { json: TAB_BACKUP_JSON, text: TAB_EXPORTED_JSON },
+  B: {
+    json: LEGACY_BACKUP_JSON.replace('"StopDistanceCarrot": 800', '"StopDistanceCarrot": "785"').replace('"FutureUnknown"', '"LegacyB"'),
+    text: LEGACY_EXPORTED_JSON.replace('"StopDistanceCarrot": 800', '"StopDistanceCarrot": "785"').replace('"FutureUnknown"', '"LegacyB"'),
+  },
+  C: {
+    json: '{"StopDistanceCarrot":"843","ChosenC":{ "integer":9007199254740993, "nested":[false,1.234567890123456789012345,null,"  C  "] }}',
+    text: '{\n  "StopDistanceCarrot": "843",\n  "ChosenC": { "integer":9007199254740993, "nested":[false,1.234567890123456789012345,null,"  C  "] }\n}\n',
+  },
+  D: {
+    json: '{"StopDistanceCarrot":"915","LatestD":{ "integer":9007199254740997, "nested":[true,9.876543210987654321098765,null,"  D  "] }}',
+    text: '{\n  "StopDistanceCarrot": "915",\n  "LatestD": { "integer":9007199254740997, "nested":[true,9.876543210987654321098765,null,"  D  "] }\n}\n',
+  },
+};
+const transitionLegacyRaw = name => `{"target":"${LEGACY_TARGET}","backup":${TRANSITION_BACKUPS[name].json}}`;
+
+function transitionFixture() {
+  const fixture = legacyUpdateFixture();
+  fixture.legacyRaw = transitionLegacyRaw('B');
+  fixture.storage.set(LEGACY_UPDATE_KEY, fixture.legacyRaw);
+  return fixture;
+}
+
+async function commitTransition(demo, action) {
+  if (action === 'chooseLegacy') demo.click({ action: 'useLegacyUpdate' });
+  else if (action === 'keepTab') demo.click({ action: 'keepTabBackup' });
+  else if (action === 'importC') await demo.importText(TRANSITION_BACKUPS.C.json, 'chosen C.json');
+  else if (action === 'newDemo') demo.click({ action: 'new' });
+  else assert.fail('unknown transition action: ' + action);
+}
+
+function assertTransitionBlocked(demo, message) {
+  assert.equal(demo.run('state.recoveryBlocked'), true, message);
+  const downloads = demo.downloads.length;
+  demo.click({ action: 'export' });
+  assert.equal(demo.downloads.length, downloads, 'blocked recovery cannot export an invented default or stale dataset');
+}
+
+test('Update transition regression: identical legacy bytes never reuse a previously resolved choice', async () => {
+  const fixture = transitionFixture(), sessionFailure = {};
+  const demo = loadDemo({ ...fixture, sessionFailure, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assertLegacyChoice(demo);
+  sessionFailure.writeKeys = [LEGACY_UPDATE_KEY];
+  await commitTransition(demo, 'importC');
+  assert.equal(await demo.exportedText(), TRANSITION_BACKUPS.C.text);
+  assert.equal(JSON.parse(fixture.session.get(TAB_DRAFT_KEY)).json + '\n', TRANSITION_BACKUPS.C.text);
+  sessionFailure.writeKeys = [];
+  fixture.storage.set(LEGACY_UPDATE_KEY, fixture.legacyRaw); // v1.0.16 rewrites the same bytes on a new update request.
+  const fresh = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assertTransitionBlocked(fresh, 'a fresh version landing requires a new choice even when B bytes match the old snapshot');
+  fresh.click({ action: 'useLegacyUpdate' });
+  assert.equal(await fresh.exportedText(), TRANSITION_BACKUPS.B.text);
+  assert.equal(Object.hasOwn(await fresh.exported(), 'ChosenC'), false);
+});
+
+test('Update transition matrix preserves committed authority across persistence and next-entry boundaries', async t => {
+  const defaults = await loadDemo({ hosted: true, startup: true }).exportedText();
+  const selected = { chooseLegacy: TRANSITION_BACKUPS.B.text, keepTab: TRANSITION_BACKUPS.A.text, importC: TRANSITION_BACKUPS.C.text, newDemo: defaults };
+  const actions = Object.keys(selected), failures = ['none', 'draftWrite', 'updateCleanupWrite'], nextEntries = ['reload', 'sameLegacy', 'differentLegacy', 'native'];
+  const notApplicable = [];
+  for (const action of actions) for (const failure of failures) for (const next of nextEntries) {
+    const name = `${action} / ${failure} / ${next}`;
+    // New-demo reset writes a cleared marker then removes DRAFT; it never writes DRAFT.
+    if (action === 'newDemo' && failure === 'draftWrite') { notApplicable.push(name); continue; }
+    const durable = action === 'newDemo' ? failure === 'none' : failure !== 'draftWrite';
+    await t.test(name, async () => {
+      const fixture = transitionFixture(), sessionFailure = {};
+      const demo = loadDemo({ ...fixture, sessionFailure, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+      assertLegacyChoice(demo);
+      const snapshot = fixture.session.get(LEGACY_UPDATE_KEY);
+      if (failure !== 'none') sessionFailure.writeKeys = [failure === 'draftWrite' ? TAB_DRAFT_KEY : LEGACY_UPDATE_KEY];
+      await commitTransition(demo, action);
+      const persistedDraft = fixture.session.get(TAB_DRAFT_KEY) ?? null;
+      if (action !== 'newDemo' && durable) assert.equal(JSON.parse(persistedDraft).json + '\n', selected[action], 'the complete selected bytes reached DRAFT');
+      if (!durable) {
+        assert.equal(persistedDraft, fixture.draftRaw, 'failed persistence preserves the preceding complete tab record');
+        assert.equal(fixture.session.get(LEGACY_UPDATE_KEY), snapshot, 'failed persistence preserves both unresolved candidates');
+      }
+      if (failure !== 'none') assert.match(backupStatus(demo), /저장|보관|실패|못/);
+      if (['chooseLegacy', 'keepTab'].includes(action) && failure !== 'none') assertTransitionBlocked(demo, 'a failed selection remains blocked until recovery');
+      else assert.equal(await demo.exportedText(), selected[action], 'a deliberate import/reset remains available in memory');
+      if (next === 'native' && !durable) {
+        demo.run('updateState.latest=DEMO_VERSION;updateState.assetUrl="https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/download/v1.0.20/webcarrot-offline-demo.html"');
+        demo.click({ action: 'applyHostedUpdate' });
+        assert.equal(demo.navigations.length, 0, 'an actual update action cannot navigate while required persistence still fails');
+        assert.equal(fixture.session.get(LEGACY_UPDATE_KEY), snapshot, 'a failed native attempt leaves the complete unresolved handoff intact');
+        if (['chooseLegacy', 'keepTab'].includes(action)) assertTransitionBlocked(demo, 'a failed selection cannot be bypassed through the update button');
+        else assert.equal(await demo.exportedText(), selected[action], 'a refused native handoff retains the explicit in-memory import/reset');
+        return;
+      }
+      sessionFailure.writeKeys = [];
+
+      if (next === 'reload') {
+        const restored = loadDemo({ ...fixture, hosted: true, href: demo.location.href, startup: true });
+        if (durable) assert.equal(await restored.exportedText(), selected[action], 'ordinary reload uses the successful commit even if cleanup failed');
+        else {
+          assertLegacyChoice(restored);
+          assert.equal(fixture.session.get(TAB_DRAFT_KEY), fixture.draftRaw);
+        }
+      } else if (next === 'sameLegacy' || next === 'differentLegacy') {
+        const incoming = next === 'sameLegacy' ? 'B' : 'D';
+        fixture.storage.set(LEGACY_UPDATE_KEY, transitionLegacyRaw(incoming));
+        const fresh = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}&matrix=1#backup`, startup: true });
+        assertLegacyChoice(fresh);
+        const choice = JSON.parse(fixture.session.get(LEGACY_UPDATE_KEY));
+        assert.equal(choice.legacyRaw, transitionLegacyRaw(incoming), 'the new request is the primary legacy candidate');
+        assert.equal(choice.draftRaw, action === 'newDemo' && durable ? null : persistedDraft, 'the last complete tab record remains the alternative');
+        assert.equal(fresh.location.searchParams.has('version'), false);
+        assert.equal(fresh.location.searchParams.get('matrix'), '1');
+        assert.equal(fresh.location.hash, '#backup');
+        fresh.click({ action: 'useLegacyUpdate' });
+        assert.equal(await fresh.exportedText(), TRANSITION_BACKUPS[incoming].text);
+      } else {
+        const restored = loadDemo({ ...fixture, hosted: true, href: demo.location.href, startup: true });
+        assert.equal(await restored.exportedText(), selected[action]);
+        fixture.storage.delete(LEGACY_UPDATE_KEY); // Isolate the native handoff from an unrelated global legacy candidate.
+        restored.run('storePendingUpdate(DEMO_VERSION)');
+        fixture.session.delete(TAB_DRAFT_KEY); // Require restoration from the native handoff itself.
+        const native = loadDemo({ ...fixture, hosted: true, search: `?version=${restored.run('DEMO_VERSION')}`, startup: true });
+        assert.equal(await native.exportedText(), selected[action]);
+        assert.equal(native.location.searchParams.has('version'), false);
+      }
+    });
+  }
+  assert.deepEqual(notApplicable, [
+    'newDemo / draftWrite / reload', 'newDemo / draftWrite / sameLegacy', 'newDemo / draftWrite / differentLegacy', 'newDemo / draftWrite / native',
+  ]);
+  t.diagnostic('N/A: 4 new-demo/DRAFT-write injections because reset does not write DRAFT. Its real DRAFT-remove and UPDATE-marker-write failures are tested; no runnable assertion is skipped.');
+});
+
+test('Update transition read and remove boundaries retain recoverable originals', async t => {
+  for (const next of ['reload', 'freshLegacy']) for (const key of [TAB_DRAFT_KEY, LEGACY_UPDATE_KEY]) {
+    await t.test(`${next} / unreadable ${key === TAB_DRAFT_KEY ? 'DRAFT' : 'UPDATE'}`, async () => {
+      const fixture = transitionFixture();
+      const demo = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+      await commitTransition(demo, 'importC');
+      if (next === 'freshLegacy') fixture.storage.set(LEGACY_UPDATE_KEY, fixture.legacyRaw);
+      const sessionBefore = [...fixture.session], storageBefore = [...fixture.storage];
+      const options = { ...fixture, hosted: true, search: next === 'freshLegacy' ? `?version=${LEGACY_TARGET}` : '', startup: true };
+      const blocked = loadDemo({ ...options, sessionFailure: { readKeys: [key] } });
+      assertTransitionBlocked(blocked, 'unreadable authority is never replaced by defaults');
+      assert.deepEqual([...fixture.session], sessionBefore);
+      assert.deepEqual([...fixture.storage], storageBefore);
+      const recovered = loadDemo(options);
+      if (next === 'freshLegacy') { assertLegacyChoice(recovered); recovered.click({ action: 'useLegacyUpdate' }); }
+      assert.equal(await recovered.exportedText(), TRANSITION_BACKUPS[next === 'freshLegacy' ? 'B' : 'C'].text);
+    });
+  }
+  await t.test('native handoff / UPDATE remove failure', async () => {
+    const session = new Map(), demo = loadDemo({ session, hosted: true, startup: true });
+    await demo.importText(TRANSITION_BACKUPS.C.json, 'native C.json');
+    demo.run('storePendingUpdate(DEMO_VERSION)');
+    session.delete(TAB_DRAFT_KEY);
+    const restored = loadDemo({ session, sessionFailure: { removeKeys: [LEGACY_UPDATE_KEY] }, hosted: true, startup: true });
+    assert.equal(await restored.exportedText(), TRANSITION_BACKUPS.C.text);
+    assert.match(backupStatus(restored), /정리|실패|못/);
+    assert.equal(await loadDemo({ session, hosted: true, startup: true }).exportedText(), TRANSITION_BACKUPS.C.text);
+  });
+  await t.test('native handoff / DRAFT write failure', async () => {
+    const session = new Map(), demo = loadDemo({ session, hosted: true, startup: true });
+    await demo.importText(TRANSITION_BACKUPS.C.json, 'native C.json');
+    demo.run('storePendingUpdate(DEMO_VERSION)');
+    session.delete(TAB_DRAFT_KEY);
+    const pending = session.get(LEGACY_UPDATE_KEY), search = `?version=${demo.run('DEMO_VERSION')}`;
+    const restored = loadDemo({ session, sessionFailure: { writeKeys: [TAB_DRAFT_KEY] }, hosted: true, search, startup: true });
+    assert.equal(await restored.exportedText(), TRANSITION_BACKUPS.C.text, 'the complete native payload remains available in memory');
+    assert.equal(session.get(LEGACY_UPDATE_KEY), pending, 'a failed draft commit cannot consume the only complete handoff');
+    assert.equal(restored.location.searchParams.has('version'), true);
+    assert.equal(await loadDemo({ session, hosted: true, search, startup: true }).exportedText(), TRANSITION_BACKUPS.C.text);
+  });
+  await t.test('legacy selection / shared UPDATE remove failure', async () => {
+    const fixture = transitionFixture(), storageFailure = { removeKeys: [LEGACY_UPDATE_KEY] };
+    const demo = loadDemo({ ...fixture, storageFailure, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+    await commitTransition(demo, 'chooseLegacy');
+    assert.equal(await demo.exportedText(), TRANSITION_BACKUPS.B.text);
+    assert.equal(fixture.storage.get(LEGACY_UPDATE_KEY), fixture.legacyRaw);
+    assert.match(backupStatus(demo), /정리|실패|못/);
+    assert.equal(await loadDemo({ ...fixture, hosted: true, startup: true }).exportedText(), TRANSITION_BACKUPS.B.text);
+    const fresh = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+    assertLegacyChoice(fresh);
+  });
+  await t.test('new demo / DRAFT remove failure', async () => {
+    const fixture = transitionFixture(), sessionFailure = { removeKeys: [TAB_DRAFT_KEY] };
+    const demo = loadDemo({ ...fixture, sessionFailure, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+    await commitTransition(demo, 'newDemo');
+    assert.equal(fixture.session.get(TAB_DRAFT_KEY), fixture.draftRaw, 'a failed reset never destroys the prior complete record');
+    assert.match(backupStatus(demo), /메모리|지우지|못/);
+    assert.equal(await loadDemo({ ...fixture, hosted: true, startup: true }).exportedText(), TRANSITION_BACKUPS.A.text, 'the warning identifies a memory-only reset; ordinary reload recovers the surviving original');
+  });
+});
+
+test('Update transition stale-document commits become the current tab candidate without losing raw data', async t => {
+  // v1.0.18 (6e13769) writes DRAFT without understanding a later format-2 choice record.
+  const v18Persistence = `function draftRecord(){return {format:1,id:state.datasetId,revision:state.revision,sourceName:state.sourceName,imported:state.imported,sourceRecognized:state.sourceRecognized,dirty:[...state.dirty],json:backupJSON()};}
+function persistDraft(){
+ if(state.recoveryBlocked)return false;
+ try{sessionStorage.setItem(DRAFT_STORAGE_KEY,JSON.stringify(draftRecord()));state.draftSaved=true;state.storageWarning='';}
+ catch{state.draftSaved=false;state.storageWarning='이 탭에 임시 저장하지 못했습니다. 현재 메모리에서 편집은 가능하지만 새로고침·탭 닫기 전에 JSON을 내보내세요.';}
+ renderBackupStatus();
+ return state.draftSaved;
+}`;
+  for (const next of ['reload', 'native']) await t.test(next, async () => {
+    const fixture = transitionFixture();
+    const olderDocument = loadDemo({ ...fixture, hosted: true, startup: true });
+    olderDocument.run(v18Persistence);
+    const current = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+    assertLegacyChoice(current);
+    await olderDocument.importText(TRANSITION_BACKUPS.D.json, 'latest D.json');
+    olderDocument.click({ set: 'StopDistanceCarrot', value: '916' });
+    const expected = TRANSITION_BACKUPS.D.text.replace('"915"', '"916"');
+    assert.equal(await olderDocument.exportedText(), expected);
+    const committedRaw = fixture.session.get(TAB_DRAFT_KEY);
+    assert.equal(Object.hasOwn(JSON.parse(committedRaw), 'resolvedUpdate'), false, 'the old document cannot mark a new choice resolved');
+    if (next === 'native') olderDocument.run('storePendingUpdate("v1.0.20")');
+    const restored = loadDemo({ ...fixture, hosted: true, search: next === 'native' ? '?version=v1.0.20' : '', startup: true });
+    if (next === 'reload') {
+      assertLegacyChoice(restored);
+      assert.equal(JSON.parse(fixture.session.get(LEGACY_UPDATE_KEY)).draftRaw, committedRaw, 'keep-tab offers the actual current record rather than frozen A');
+      restored.click({ action: 'keepTabBackup' });
+    }
+    assert.equal(await restored.exportedText(), expected);
+    assert.equal(await loadDemo({ ...fixture, hosted: true, startup: true }).exportedText(), expected);
+  });
+});
+
 test('Actual file input commits the last selected file when reads finish in reverse order', async () => {
   const demo = loadDemo(), first = beginImport(demo, 'A.json'), last = beginImport(demo, 'B.json');
   last.resolve('{"StopDistanceCarrot":"800","BOnly":true}');
@@ -1238,7 +1471,7 @@ test('Exports use a distinct official source identifier, original filename and c
   assert.notEqual(names[0], names[1], 'same-millisecond exports have distinct filenames');
   for (const name of names) {
     assert.match(name, /webcarrot_official/);
-    assert.match(name, /0df83618/);
+    assert.ok(name.includes(OFFICIAL_SHA.slice(0, 8)));
     assert.match(name, /원본_설정/);
     assert.doesNotMatch(name, /[\\/<>:"|?*]/);
   }
