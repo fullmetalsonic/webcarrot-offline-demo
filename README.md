@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.18 | WebCarrot Offline Settings Demo v1.0.18
+# WebCarrot 오프라인 설정 데모 v1.0.19 | WebCarrot Offline Settings Demo v1.0.19
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -33,6 +33,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
+- **v1.0.19**는 v1.0.16의 업데이트 백업이 예전 탭 보관값이나 새 데모 표식에 가려지는 문제를 수정했습니다. 두 보관본이 충돌하면 **구버전 업데이트 백업 사용** 또는 **이전 탭 보관값 유지**를 선택하며, 선택 전 새로고침해도 후보를 유지합니다. 구버전에서 수정한 뒤 업데이트했다면 첫 번째 백업을 선택하세요. 수정하지 않은 값과 미지원 키의 원문은 그대로 보존합니다.
 - **v1.0.18**은 일반 INT의 소수·불리언 입력 증감, `"4.0"`·`"4e0"` 갭 능력값, 대소문자·공백이 있는 언어 표시를 원본에 맞췄습니다. 값 표시 폭이 바뀔 때 한 번의 터치로 입력창까지 열리는 문제도 수정했습니다. 설정 정의와 차량 목록은 그대로입니다.
 - **v1.0.17**은 백업 처리 수리입니다. 새로고침 후 기본값이 내보내지는 문제, 읽기 완료 순서 역전, 이전 편집창의 값 덮어쓰기, 업데이트 보관본의 탭 간 덮어쓰기, 표시값과 저장값의 불일치를 수정했습니다. 원본 설정 212개와 차량 목록은 v1.0.16 기준을 유지합니다.
 - **v1.0.16**은 공식 carrot-wip [0df8361](https://github.com/ajouatom/openpilot/commit/0df83618f196357165a29218c9a588b0131c7d20) 기준입니다. 수동 턴 자동깜박이와 Tesla CAN 빨간불 정지·수동 차로변경 램프·모델 의도 램프·모델 경로 램프 설정을 추가했습니다. 새 항목은 모두 기본 꺼짐이며, 원본의 전체 설명·주의문과 메뉴 순서를 반영했습니다. 수동 차로변경 표시·항상 조향·Tesla 자동 방향지시등·현대 카메라 SCC 설명도 갱신했습니다.
@@ -96,6 +97,7 @@ Recognized Hyundai/Kia/Genesis and Toyota/Lexus models follow the official visib
 
 ### Updates
 
+- **v1.0.19** repairs v1.0.16 update backups being hidden by an older tab draft or a new-demo marker. Conflicting backups require an explicit choice: **구버전 업데이트 백업 사용** (use the legacy update backup) or **이전 탭 보관값 유지** (keep the existing tab backup). Candidates survive reloads before selection. Choose the first option after editing in the older version and updating. Untouched values and unknown keys keep their original JSON tokens.
 - **v1.0.18** aligns fractional/boolean INT edits, `"4.0"`/`"4e0"` gap capability and case/whitespace-insensitive language labels with upstream. A touch no longer opens the value editor after a step changes the label width. The settings schema and vehicle catalog are unchanged.
 - **v1.0.17** repairs backup lifecycle problems: default exports after reload, reversed import completion, stale editor writes, cross-tab update handoff overwrites and displayed/stored value mismatches. The 212-setting schema and vehicle catalog remain pinned to v1.0.16.
 - **v1.0.16** follows official carrot-wip [0df8361](https://github.com/ajouatom/openpilot/commit/0df83618f196357165a29218c9a588b0131c7d20). It adds Manual Turn Indicator and Tesla CAN Red Light Stop, Manual Lane Lamps, Model Desire Lamps and Model Path Lamps. All five default to OFF. Full upstream descriptions, cautions and menu order are included, with revised descriptions for Manual Lane Change Indicator, Always Lateral, Tesla Automatic Turn Signals and Hyundai Camera SCC.

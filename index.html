@@ -42,7 +42,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <div id="updateOverlay" class="modal" role="dialog" aria-modal="true" aria-labelledby="updateTitle" hidden><div class="modal-sheet"><div class="modal-header"><div><strong id="updateTitle">데모 업데이트</strong><span id="updateSubtitle"></span></div><button class="modal-cancel" type="button" data-action="closeUpdate">닫기</button></div><div id="updateBody" class="update-body"></div></div></div>
 </div>
 <script>
-const DEMO_VERSION = '1.0.18';
+const DEMO_VERSION = '1.0.19';
 const UPDATE_REPO = 'fullmetalsonic/webcarrot-offline-demo';
 const UPDATE_PAGES_URL = 'https://fullmetalsonic.github.io/webcarrot-offline-demo/';
 const UPDATE_ASSET = 'webcarrot-offline-demo.html';
@@ -55,7 +55,7 @@ const STEP_CYCLE = Object.freeze([1,2,5,10,50,100]);
 const STEP_STORAGE_KEY = 'webcarrot-offline-demo:setting-multipliers';
 const BY_NAME = new Map(PARAMS.map(param => [param.name, param]));
 const CAR_CATALOG = {"Audi":["Audi A3 2014-19","Audi A3 Sportback e-tron 2017-18","Audi Q2 2018","Audi Q3 2019-23","Audi RS3 2018","Audi S3 2015-17"],"Buick":["Buick Baby Enclave 2020-23","Buick LaCrosse 2017-19","Buick Regal Essence 2018"],"CT6-2019":["CT6-2019 Advanced ACC"],"CUPRA":["CUPRA Ateca 2018-23"],"Cadillac":["Cadillac ATS Premium Performance 2018","Cadillac CT6 No ACC","Cadillac Escalade 2017","Cadillac Escalade ESV 2016","Cadillac Escalade ESV 2019","Cadillac XT4 2023","Cadillac XT5 No ACC"],"Chevrolet":["Chevrolet Bolt EUV 2022-23","Chevrolet Bolt EUV 2022-23 - No-ACC","Chevrolet Bolt EV 2017-23 - No-ACC","Chevrolet Bolt EV 2022-23","Chevrolet Equinox 2019-22","Chevrolet Equinox NO ACC 2019-22","Chevrolet Malibu No ACC","Chevrolet Malibu Premier 2017","Chevrolet Silverado 1500 2020-21","Chevrolet Suburban 2016-20","Chevrolet Suburban Premier 2016-20","Chevrolet TRAX 2024","Chevrolet Trailblazer 2021-22","Chevrolet Trailblazer NO ACC 2021-22","Chevrolet Traverse 2022-23","Chevrolet Volt 2017-18","Chevrolet Volt 2019","Chevrolet Volt LT 2017-18"],"Ford":["Ford Bronco Sport 2021-24","Ford Escape 2020-22","Ford Escape 2023-24","Ford Expedition 2022-24","Ford Explorer 2020-24","Ford F-150 2021-23","Ford F-150 Lightning 2022-23","Ford Focus 2018","Ford Kuga 2020-23","Ford Kuga Hybrid 2024","Ford Kuga Plug-in Hybrid 2024","Ford Maverick 2022","Ford Maverick 2023-24","Ford Mustang Mach-E 2021-24","Ford Ranger 2024"],"GMC":["GMC Acadia 2018","GMC Sierra 1500 2020-21","GMC Yukon 2019-20","GMC Yukon No ACC"],"Genesis":["Genesis EQ900 2017","Genesis EQ900 LIMOUSINE","Genesis G70 2018","Genesis G70 2019-21","Genesis G70 2022-23","Genesis G80 (2.5T Advanced Trim, with HDA II) 2024","Genesis G80 2017","Genesis G80 2018-19","Genesis G90 2017-20","Genesis G90 2019","Genesis GV60 (Advanced Trim) 2023","Genesis GV60 (Performance Trim) 2022-23","Genesis GV70 (2.5T Trim, without HDA II) 2022-24","Genesis GV70 (3.5T Trim, without HDA II) 2022-23","Genesis GV70 EV 2020-2023","Genesis GV70 Electrified (Australia Only) 2022","Genesis GV70 Electrified (with HDA II) 2023-24","Genesis GV80 2023"],"Holden":["Holden Astra 2017"],"Hyundai":["Hyundai Azera 2022","Hyundai Azera 2023-2024","Hyundai Azera Hybrid 2019","Hyundai Azera Hybrid 2020","Hyundai Casper 2023","Hyundai Casper EV 2024","Hyundai Custin 2023","Hyundai Elantra 2017-18","Hyundai Elantra 2019","Hyundai Elantra 2021-23","Hyundai Elantra GT 2017-20","Hyundai Elantra Hybrid 2021-23","Hyundai Genesis 2015-16","Hyundai Grandeur 2018-19","Hyundai Grandeur HEV 2018-19","Hyundai IONIQ 5 PE (NE1)","Hyundai Ioniq 5 (Southeast Asia and Europe only) 2022-24","Hyundai Ioniq 5 (with HDA II) 2022-24","Hyundai Ioniq 5 (without HDA II) 2022-24","Hyundai Ioniq 5 N (with HDA II) 2024","Hyundai Ioniq 5 PE (with HDA II) 2024","Hyundai Ioniq 6 (with HDA II) 2023-24","Hyundai Ioniq 9","Hyundai Ioniq Electric 2019","Hyundai Ioniq Electric 2020","Hyundai Ioniq Hybrid 2017-19","Hyundai Ioniq Hybrid 2020-22","Hyundai Ioniq Plug-in Hybrid 2019","Hyundai Ioniq Plug-in Hybrid 2020-22","Hyundai Kona 2020","Hyundai Kona 2022","Hyundai Kona Electric (with HDA II, Korea only) 2023","Hyundai Kona Electric 2018-21","Hyundai Kona Electric 2022-23","Hyundai Kona Hybrid 2020","Hyundai Kona Hybrid 2024","Hyundai Nexo","Hyundai Nexo 2021","Hyundai Palisade 2020-22","Hyundai Porter II EV 2024","Hyundai SANTAFE (MX5)","Hyundai SANTAFE HYBRID (MX5)","Hyundai Santa Cruz 2022-24","Hyundai Santa Fe 2019-20","Hyundai Santa Fe 2021-23","Hyundai Santa Fe Hybrid 2022-23","Hyundai Santa Fe Plug-in Hybrid 2022-23","Hyundai Sonata 2018-19","Hyundai Sonata 2020-23","Hyundai Sonata 2024-25","Hyundai Sonata Hybrid 2020-23","Hyundai Staria 2023","Hyundai Staria EV 2026","Hyundai Tucson 2021","Hyundai Tucson 2022","Hyundai Tucson 2023-24","Hyundai Tucson Diesel 2019","Hyundai Tucson Hybrid 2022-24","Hyundai Tucson Plug-in Hybrid 2024","Hyundai Veloster 2019-20","Hyundai i30 2017-19"],"Kia":["Kia Carnival (China only) 2023","Kia Carnival 2022-24","Kia Ceed 2019-21","Kia EV3 (SV1)","Kia EV4 2025","Kia EV5 (with HDA II) 2026","Kia EV6 (Southeast Asia only) 2022-24","Kia EV6 (with HDA II) 2022-24","Kia EV6 (without HDA II) 2022-24","Kia EV6 PE (CV1)","Kia EV6 PE (with HDA II) 2025","Kia EV9 (MV)","Kia Forte 2019-21","Kia Forte 2022-23","Kia K5 2019 & 2016","Kia K5 2021-24","Kia K5 2024","Kia K5 Hybrid 2017","Kia K5 Hybrid 2020-22","Kia K5 Hybrid 2022","Kia K5 Hybrid 2024","Kia K7 2016-2019","Kia K7 2020","Kia K7 Hybrid 2016-2019","Kia K7 Hybrid 2020","Kia K8 Hybrid (with HDA II) 2023","Kia K9 2016-2019","Kia Mohave 2019","Kia Niro EV 2019","Kia Niro EV 2020","Kia Niro EV 2021","Kia Niro EV 2022","Kia Niro EV 2023","Kia Niro Hybrid 2018","Kia Niro Hybrid 2021","Kia Niro Hybrid 2022","Kia Niro Hybrid 2023","Kia Niro Plug-in Hybrid 2018-19","Kia Niro Plug-in Hybrid 2020","Kia Niro Plug-in Hybrid 2021","Kia Niro Plug-in Hybrid 2022","Kia Optima 2017","Kia Optima 2019-20","Kia Optima Hybrid 2017","Kia Optima Hybrid 2019","Kia PV5 (SW1)","Kia Ray EV","Kia Seltos 2021","Kia Sorento 2018","Kia Sorento 2019","Kia Sorento 2021-23","Kia Sorento Hybrid 2021-23","Kia Sorento Plug-in Hybrid 2022-23","Kia Soul EV 2019","Kia Sportage 2023-24","Kia Sportage Hybrid 2023","Kia Stinger 2018-20","Kia Stinger 2022-23","Kia Telluride 2020-22"],"Lexus":["Lexus CT Hybrid 2017-18","Lexus ES 2017-18","Lexus ES 2019-24","Lexus ES Hybrid 2017-18","Lexus ES Hybrid 2019-25","Lexus GS F 2016","Lexus IS 2017-19","Lexus IS 2022-23","Lexus LC 2024","Lexus NX 2018-19","Lexus NX 2020-21","Lexus NX Hybrid 2018-19","Lexus NX Hybrid 2020-21","Lexus RC 2018-20","Lexus RX 2016","Lexus RX 2017-19","Lexus RX 2020-22","Lexus RX Hybrid 2016","Lexus RX Hybrid 2017-19","Lexus RX Hybrid 2020-22","Lexus UX Hybrid 2019-24"],"Lincoln":["Lincoln Aviator 2020-24"],"MAN":["MAN TGE 2017-24","MAN eTGE 2020-24"],"Mazda":["Mazda 3 2017-18","Mazda 6 2017-20","Mazda CX-5 2017-21","Mazda CX-5 2022-25","Mazda CX-9 2016-20","Mazda CX-9 2021-23"],"SEAT":["SEAT Alhambra 2018-20","SEAT Ateca 2016-23","SEAT Leon 2014-20"],"Tesla":["Tesla Model 3 (with HW3) 2019-23","Tesla Model 3 (with HW4) 2024-26","Tesla Model X (with HW4) 2024","Tesla Model Y (with HW3) 2020-23","Tesla Model Y (with HW4) 2024-25"],"Toyota":["Toyota Alphard 2019-20","Toyota Alphard Hybrid 2021","Toyota Avalon 2016","Toyota Avalon 2017-18","Toyota Avalon 2019-21","Toyota Avalon 2022","Toyota Avalon Hybrid 2019-21","Toyota Avalon Hybrid 2022","Toyota C-HR 2017-20","Toyota C-HR 2021","Toyota C-HR Hybrid 2017-20","Toyota C-HR Hybrid 2021-22","Toyota Camry 2018-20","Toyota Camry 2021-24","Toyota Camry Hybrid 2018-20","Toyota Camry Hybrid 2021-24","Toyota Corolla 2017-19","Toyota Corolla 2020-22","Toyota Corolla Cross (Non-US only) 2020-23","Toyota Corolla Cross Hybrid (Non-US only) 2020-22","Toyota Corolla Hatchback 2019-22","Toyota Corolla Hybrid (South America only) 2020-23","Toyota Corolla Hybrid 2020-22","Toyota Highlander 2017-19","Toyota Highlander 2020-23","Toyota Highlander Hybrid 2017-19","Toyota Highlander Hybrid 2020-23","Toyota Mirai 2021","Toyota Prius 2016","Toyota Prius 2017-20","Toyota Prius 2021-22","Toyota Prius Prime 2017-20","Toyota Prius Prime 2021-22","Toyota Prius v 2017","Toyota RAV4 2016","Toyota RAV4 2017-18","Toyota RAV4 2019-21","Toyota RAV4 2022","Toyota RAV4 2023-25","Toyota RAV4 Hybrid 2016","Toyota RAV4 Hybrid 2017-18","Toyota RAV4 Hybrid 2019-21","Toyota RAV4 Hybrid 2022","Toyota RAV4 Hybrid 2023-25","Toyota RAV4 Prime 2021-23","Toyota Sienna 2018-20","Toyota Sienna 2021-23","Toyota Yaris 2023 (Non-US only)"],"Volkswagen":["Volkswagen Arteon 2018-23","Volkswagen Arteon R 2020-23","Volkswagen Arteon Shooting Brake 2020-23","Volkswagen Arteon eHybrid 2020-23","Volkswagen Atlas 2018-23","Volkswagen Atlas Cross Sport 2020-22","Volkswagen CC 2018-22","Volkswagen Caddy 2019","Volkswagen Caddy Maxi 2019","Volkswagen California 2021-23","Volkswagen Caravelle 2020","Volkswagen Crafter 2017-24","Volkswagen Golf 2015-20","Volkswagen Golf Alltrack 2015-19","Volkswagen Golf GTD 2015-20","Volkswagen Golf GTE 2015-20","Volkswagen Golf GTI 2015-21","Volkswagen Golf R 2015-19","Volkswagen Golf SportsVan 2015-20","Volkswagen Grand California 2019-24","Volkswagen ID.4 2021-23","Volkswagen ID.4 2024-25","Volkswagen ID.5 2022-23","Volkswagen Jetta 2015-18","Volkswagen Jetta 2018-23","Volkswagen Jetta GLI 2021-23","Volkswagen Passat 2015-22","Volkswagen Passat Alltrack 2015-22","Volkswagen Passat GTE 2015-22","Volkswagen Passat NMS 2017-22","Volkswagen Polo 2018-23","Volkswagen Polo GTI 2018-23","Volkswagen Sharan 2018-22","Volkswagen T-Cross 2021","Volkswagen T-Roc 2018-23","Volkswagen Taos 2022-23","Volkswagen Teramont 2018-22","Volkswagen Teramont Cross Sport 2021-22","Volkswagen Teramont X 2021-22","Volkswagen Tiguan 2018-23","Volkswagen Tiguan eHybrid 2021-23","Volkswagen Touran 2016-23","Volkswagen e-Crafter 2018-24","Volkswagen e-Golf 2014-20"],"\u0160koda":["\u0160koda Fabia 2022-23","\u0160koda Kamiq 2021-23","\u0160koda Karoq 2019-23","\u0160koda Kodiaq 2017-23","\u0160koda Octavia 2015-19","\u0160koda Octavia RS 2016","\u0160koda Octavia Scout 2017-19","\u0160koda Scala 2020-23","\u0160koda Superb 2015-22"]};
-const state={backup:null,backupRaw:new Map(),imported:false,dirty:new Set(),datasetId:newDatasetId(),revision:0,sourceName:'새 데모',sourceRecognized:null,loadingFile:null,recoveryBlocked:false,storageWarning:'',draftSaved:true,stage:'categories',category:null,group:null,detailName:null,search:'',lastStage:'categories',tab:'settings',maker:null,modal:null,pendingCar:null,fab:false,multiplier:readStepMultipliers(),choice:null};
+const state={backup:null,backupRaw:new Map(),imported:false,dirty:new Set(),datasetId:newDatasetId(),revision:0,sourceName:'새 데모',sourceRecognized:null,loadingFile:null,recoveryBlocked:false,updateRecovery:null,updateRecoveryInvalid:false,resolvedUpdate:null,storageWarning:'',draftSaved:true,stage:'categories',category:null,group:null,detailName:null,search:'',lastStage:'categories',tab:'settings',maker:null,modal:null,pendingCar:null,fab:false,multiplier:readStepMultipliers(),choice:null};
 const NAV_MARK='webcarrot-offline-demo-navigation';
 let navigationHistoryReady=true;
 function navSnapshot(){return {datasetId:state.datasetId,tab:state.tab,stage:state.stage,category:state.category,group:state.group,detailName:state.detailName,lastStage:state.lastStage,search:state.search,modal:state.modal,maker:state.maker,pendingCar:state.pendingCar,choiceName:state.choice?.name||null,updateOpen:!document.getElementById('updateOverlay').hidden};}
@@ -284,6 +284,72 @@ function storePendingUpdate(target){
  catch(error){state.storageWarning='업데이트용 탭 보관에 실패했습니다. JSON 백업을 내보내세요.';renderBackupStatus();throw error;}
 }
 function applyHostedUpdate(){if(!updateState.assetUrl||!isHostedDemo()||!backupReady())return;try{storePendingUpdate(updateState.latest);}catch{toast('브라우저에 설정을 보관하지 못했습니다. JSON 백업을 먼저 내보내세요.',true);return;}const next=new URL(UPDATE_PAGES_URL);next.searchParams.set('version',updateState.latest);location.assign(next.href);}
+function readLegacyUpdate(raw){const saved=JSON.parse(raw);if(!stableVersion(saved?.target))throw new Error('업데이트 버전 정보가 올바르지 않습니다.');const json=rawBackupValues(raw).get('backup');return {target:saved.target,json,backup:parseBackup(json)};}
+function consumeUpdateTarget(target){const url=new URL(location.href||UPDATE_PAGES_URL);if(compareVersions(url.searchParams.get('version'),target)===0){url.searchParams.delete('version');history.replaceState(history.state,'',url.href);}}
+function saveUpdateRecovery(recovery){
+ state.updateRecovery=recovery;state.updateRecoveryInvalid=false;blockDraftRecovery('구버전 업데이트 백업과 이전 탭 보관값 중 사용할 설정을 선택하세요.');
+ try{sessionStorage.setItem(UPDATE_BACKUP_KEY,JSON.stringify(recovery));consumeUpdateTarget(recovery.target);}
+ catch{state.storageWarning='업데이트 선택 보관에 실패했습니다. 원본 보관값과 업데이트 주소를 유지했습니다. 저장 공간을 확인하거나 JSON을 직접 불러오세요.';}
+ return true;
+}
+function restoreLegacyUpdateChoice(){
+ if(!isHostedDemo())return false;
+ try{
+  const pendingRaw=sessionStorage.getItem(UPDATE_BACKUP_KEY);
+  const target=new URL(location.href||UPDATE_PAGES_URL).searchParams.get('version');
+  let pending;try{pending=JSON.parse(pendingRaw);}catch{}
+  if(pending?.format===2&&pending.kind==='legacy-choice'){
+   state.updateRecoveryInvalid=true;
+   const committedRaw=sessionStorage.getItem(DRAFT_STORAGE_KEY);let committed;try{committed=readDraft(committedRaw);}catch{}
+   if(typeof pending.id!=='string'||!pending.id||typeof pending.legacyRaw!=='string'||!(pending.draftRaw===null||typeof pending.draftRaw==='string')||compareVersions(readLegacyUpdate(pending.legacyRaw).target,pending.target)!==0||pending.previousLegacyRaws!==undefined&&(!Array.isArray(pending.previousLegacyRaws)||pending.previousLegacyRaws.some(raw=>typeof raw!=='string')))throw new Error('업데이트 선택 보관본을 확인할 수 없습니다.');
+   for(const raw of pending.previousLegacyRaws||[])readLegacyUpdate(raw);
+   if(stableVersion(target)){
+    const latestRaw=localStorage.getItem(UPDATE_BACKUP_KEY);
+    if(latestRaw!==null&&compareVersions(JSON.parse(latestRaw)?.target,target)===0&&latestRaw!==pending.legacyRaw){
+     readLegacyUpdate(latestRaw);
+     return saveUpdateRecovery({...pending,id:newDatasetId(),target,legacyRaw:latestRaw,draftRaw:committed?committedRaw:pending.draftRaw,previousLegacyRaws:[...new Set([pending.legacyRaw,...(pending.previousLegacyRaws||[])])].filter(raw=>raw!==latestRaw)});
+    }
+   }
+   if(committed?.resolvedUpdate===pending.id){
+    installDraft(committed);state.updateRecoveryInvalid=false;
+    try{sessionStorage.setItem(UPDATE_BACKUP_KEY,JSON.stringify({format:1,cleared:true}));}catch{state.storageWarning='선택한 설정은 복원했지만 이전 업데이트 선택 보관본을 정리하지 못했습니다.';}
+    consumeUpdateTarget(pending.target);return true;
+   }
+   state.updateRecovery=pending;state.updateRecoveryInvalid=false;blockDraftRecovery('구버전 업데이트 백업과 이전 탭 보관값 중 사용할 설정을 선택하세요.');consumeUpdateTarget(pending.target);return true;
+  }
+  if(!stableVersion(target))return false;
+  const legacyRaw=localStorage.getItem(UPDATE_BACKUP_KEY);
+  if(legacyRaw===null)return false;
+  if(compareVersions(JSON.parse(legacyRaw)?.target,target)!==0)return false;
+  readLegacyUpdate(legacyRaw);
+  let draftRaw=sessionStorage.getItem(DRAFT_STORAGE_KEY);
+  if(draftRaw===null&&pending?.format===1&&!pending.cleared)draftRaw=pendingRaw;
+  if(draftRaw===null&&pendingRaw===null){const restored=restorePendingUpdate();if(restored&&state.draftSaved)consumeUpdateTarget(target);return restored;}
+  // Legacy handoffs have no tab identity: preserve both candidates before asking, never guess which is newer.
+  return saveUpdateRecovery({format:2,kind:'legacy-choice',id:newDatasetId(),target,legacyRaw,draftRaw});
+ }catch(error){blockDraftRecovery(`구버전 업데이트 보관본을 확인하지 못했습니다: ${error.message} JSON을 불러오거나 새 데모를 시작하세요.`);return true;}
+}
+function renderUpdateRecovery(){
+ const recovery=state.updateRecovery;if(!recovery)return '';
+ const legacy=readLegacyUpdate(recovery.legacyRaw);let tab=null;try{if(recovery.draftRaw!==null)tab=readDraft(recovery.draftRaw);}catch{}
+ const tabLabel=tab?`이전 탭 보관값 유지 · ${esc(tab.sourceName)} · ${Object.keys(tab.backup).length}개`:recovery.draftRaw===null?'새 데모로 시작':'이전 탭 보관본 손상 · JSON으로 확인 필요';
+ const previous=(recovery.previousLegacyRaws||[]).map((raw,index)=>`<button type="button" data-action="previousLegacyUpdate:${index}">이전에 미선택한 업데이트 백업 ${index+1} · ${Object.keys(readLegacyUpdate(raw).backup).length}개 항목</button>`).join('');
+ return `<section class="tool-panel" aria-label="업데이트 백업 선택"><h2>업데이트할 백업을 선택하세요</h2><p>구버전의 공용 보관함과 이 탭에 남은 보관본이 충돌했습니다. 어느 탭에서 만든 값인지 알 수 없어 자동으로 덮어쓰지 않았습니다. 구버전에서 방금 수정하고 업데이트했다면 첫 번째 백업을 선택하세요.</p><button type="button" data-action="useLegacyUpdate">구버전 업데이트 백업 사용 · ${Object.keys(legacy.backup).length}개 항목</button><button type="button" data-action="keepTabBackup" ${recovery.draftRaw!==null&&!tab?'disabled':''}>${tabLabel}</button>${previous}<p>선택 전에는 설정 편집과 일반 내보내기가 차단됩니다. JSON 백업을 직접 불러와 계속할 수도 있습니다.</p></section>`;
+}
+function resolveLegacyUpdateChoice(useLegacy,previousIndex=null){
+ const recovery=state.updateRecovery;if(!recovery||state.loadingFile)return false;
+ try{
+  const selectedRaw=previousIndex===null?recovery.legacyRaw:recovery.previousLegacyRaws?.[previousIndex];
+  resetBackupEditors();
+  if(useLegacy){const saved=readLegacyUpdate(selectedRaw);installBackup(saved.backup,saved.json,{sourceName:previousIndex===null?'구버전 업데이트 백업':'이전 미선택 업데이트 백업',imported:true});}
+  else if(recovery.draftRaw!==null)installDraft(readDraft(recovery.draftRaw));
+  else installBackup(defaultBackup(),'{}',{sourceName:'새 데모',imported:false,sourceRecognized:null});
+  if(!persistDraft()){state.recoveryBlocked=true;renderBackupStatus();return false;}
+  consumeUpdateTarget(recovery.target);
+  if(useLegacy){try{if(localStorage.getItem(UPDATE_BACKUP_KEY)===selectedRaw)localStorage.removeItem(UPDATE_BACKUP_KEY);}catch{state.storageWarning='선택한 설정은 이 탭에 보관했지만 공용 업데이트 보관본을 정리하지 못했습니다.';}}
+  render();recordNav(true);toast('선택한 백업으로 업데이트를 완료했습니다.');return true;
+ }catch(error){blockDraftRecovery(`백업 선택을 완료하지 못했습니다: ${error.message} JSON을 불러오거나 다시 선택하세요.`);renderBackupStatus();return false;}
+}
 function restorePendingUpdate(){
  if(!isHostedDemo())return false;
  let raw,legacy=false;
@@ -295,9 +361,8 @@ function restorePendingUpdate(){
   if(!legacy&&saved?.format===1&&saved.cleared===true)return false;
   if(!stableVersion(saved?.target))throw new Error('업데이트 버전 정보가 올바르지 않습니다.');
   if(legacy){
-   const json=rawBackupValues(raw).get('backup');
-   const parsed=parseBackup(json);
-   installBackup(parsed,json,{sourceName:'이전 업데이트 백업',imported:true});
+   const savedLegacy=readLegacyUpdate(raw);
+   installBackup(savedLegacy.backup,savedLegacy.json,{sourceName:'이전 업데이트 백업',imported:true});
   }else installDraft(readDraft(raw));
   const stored=persistDraft();
   // Remove only the unchanged legacy record after this tab has its own complete copy.
@@ -439,6 +504,7 @@ function backupReady(){
 }
 function renderBackupStatus(){
  const rows=[];
+ if(state.updateRecovery)rows.push(renderUpdateRecovery());
  if(state.recoveryBlocked)rows.push('<p class="warning">복원 대기: 표시되는 기본값은 미리보기입니다. 편집과 내보내기를 차단했습니다.</p>');
  else rows.push(`<p>현재: ${esc(state.sourceName)} · ${Object.keys(state.backup||{}).length}개 항목 · 수정 ${state.dirty.size}개</p>`);
  if(state.loadingFile)rows.push(`<p class="warning">${esc(state.loadingFile)} 불러오는 중… 마지막으로 선택한 파일만 적용합니다. 현재 백업은 완료 전까지 유지합니다.</p>`);
@@ -460,32 +526,35 @@ function resetBackupEditors(){
 function installBackup(backup,json,{sourceName,imported,sourceRecognized=recognizedKeys(backup),id=newDatasetId(),revision=0,dirty=[]}){
  state.backup=backup;state.backupRaw=rawBackupValues(json);state.datasetId=id;state.revision=revision;
  state.sourceName=sourceName;state.imported=imported;state.sourceRecognized=sourceRecognized;state.dirty=new Set(dirty);
- state.recoveryBlocked=false;state.importError='';
+ state.recoveryBlocked=false;state.importError='';state.resolvedUpdate=null;
 }
-function draftRecord(){return {format:1,id:state.datasetId,revision:state.revision,sourceName:state.sourceName,imported:state.imported,sourceRecognized:state.sourceRecognized,dirty:[...state.dirty],json:backupJSON()};}
+function draftRecord(){const resolvedUpdate=state.updateRecovery?.id||state.resolvedUpdate;return {format:1,id:state.datasetId,revision:state.revision,sourceName:state.sourceName,imported:state.imported,sourceRecognized:state.sourceRecognized,dirty:[...state.dirty],json:backupJSON(),...(resolvedUpdate?{resolvedUpdate}:{})};}
 function readDraft(raw){
  const saved=JSON.parse(raw);
  if(!saved||saved.format!==1||typeof saved.id!=='string'||!saved.id||!Number.isSafeInteger(saved.revision)||saved.revision<0||typeof saved.sourceName!=='string'||typeof saved.imported!=='boolean'||!(saved.sourceRecognized===null||Number.isSafeInteger(saved.sourceRecognized)&&saved.sourceRecognized>=0)||!Array.isArray(saved.dirty)||saved.dirty.some(key=>typeof key!=='string')||typeof saved.json!=='string')throw new Error('임시 보관 형식을 확인할 수 없습니다.');
  const backup=parseBackup(saved.json);
+ if(saved.resolvedUpdate!==undefined&&(typeof saved.resolvedUpdate!=='string'||!saved.resolvedUpdate))throw new Error('업데이트 선택 기록이 올바르지 않습니다.');
  if(saved.dirty.some(key=>!own(backup,key)))throw new Error('수정 항목이 보관 데이터와 일치하지 않습니다.');
  return {...saved,backup};
 }
-function installDraft(saved){installBackup(saved.backup,saved.json,saved);state.draftSaved=true;}
+function installDraft(saved){installBackup(saved.backup,saved.json,saved);state.resolvedUpdate=saved.resolvedUpdate||null;state.draftSaved=true;}
 function persistDraft(){
  if(state.recoveryBlocked)return false;
- try{sessionStorage.setItem(DRAFT_STORAGE_KEY,JSON.stringify(draftRecord()));state.draftSaved=true;state.storageWarning='';}
+ try{if(state.updateRecoveryInvalid){sessionStorage.setItem(UPDATE_BACKUP_KEY,JSON.stringify({format:1,cleared:true}));state.updateRecoveryInvalid=false;}sessionStorage.setItem(DRAFT_STORAGE_KEY,JSON.stringify(draftRecord()));if(state.updateRecovery){state.resolvedUpdate=state.updateRecovery.id;sessionStorage.setItem(UPDATE_BACKUP_KEY,JSON.stringify({format:1,cleared:true}));state.updateRecovery=null;}consumeUpdateTarget(new URL(location.href||UPDATE_PAGES_URL).searchParams.get('version'));state.draftSaved=true;state.storageWarning='';}
  catch{state.draftSaved=false;state.storageWarning='이 탭에 임시 저장하지 못했습니다. 현재 메모리에서 편집은 가능하지만 새로고침·탭 닫기 전에 JSON을 내보내세요.';}
  renderBackupStatus();
  return state.draftSaved;
 }
 function blockDraftRecovery(message){state.backup={};state.backupRaw.clear();state.recoveryBlocked=true;state.draftSaved=false;state.storageWarning=message;}
 function initializeBackup(){
- let raw;
+ if(restoreLegacyUpdateChoice())return;
+ let raw;const target=new URL(location.href||UPDATE_PAGES_URL).searchParams.get('version');
  try{raw=sessionStorage.getItem(DRAFT_STORAGE_KEY);}
  catch{blockDraftRecovery('이 탭의 임시 보관을 읽을 수 없습니다. 이전 값 대신 기본 백업을 만들지 않았습니다. JSON을 불러오거나 새 데모를 시작하세요.');return;}
- if(raw!==null){try{installDraft(readDraft(raw));}catch(error){blockDraftRecovery(`임시 보관이 손상되어 복원하지 않았습니다: ${error.message} JSON을 불러오거나 새 데모를 시작하세요.`);}return;}
- if(restorePendingUpdate())return;
+ if(raw!==null){try{installDraft(readDraft(raw));consumeUpdateTarget(target);}catch(error){blockDraftRecovery(`임시 보관이 손상되어 복원하지 않았습니다: ${error.message} JSON을 불러오거나 새 데모를 시작하세요.`);}return;}
+ if(restorePendingUpdate()){if(state.draftSaved)consumeUpdateTarget(target);return;}
  state.backup=defaultBackup();
+ consumeUpdateTarget(target);
 }
 let importGeneration=0;
 async function importBackup(file){
@@ -525,12 +594,12 @@ function newDemo(){
  if(!confirm('현재 값과 이 탭의 임시 보관본을 지우고 새 기본값으로 시작하시겠습니까? 가져온 JSON 파일 자체는 변경되지 않습니다.'))return false;
  resetBackupEditors();
  installBackup(defaultBackup(),'{}',{sourceName:'새 데모',imported:false,sourceRecognized:null});
- state.tab='settings';state.storageWarning='';state.draftSaved=true;
- try{sessionStorage.setItem(UPDATE_BACKUP_KEY,JSON.stringify({format:1,cleared:true}));sessionStorage.removeItem(DRAFT_STORAGE_KEY);}
+ state.tab='settings';state.storageWarning='';state.draftSaved=true;state.updateRecovery=null;state.updateRecoveryInvalid=false;
+ try{sessionStorage.setItem(UPDATE_BACKUP_KEY,JSON.stringify({format:1,cleared:true}));sessionStorage.removeItem(DRAFT_STORAGE_KEY);consumeUpdateTarget(new URL(location.href||UPDATE_PAGES_URL).searchParams.get('version'));}
  catch{state.draftSaved=false;state.storageWarning='이전 보관본을 지우지 못했습니다. 새 데모는 메모리에서만 시작했습니다. 새로고침 전 JSON을 내보내세요.';}
  render();recordNav(true);toast('새 데모를 시작했습니다.');return true;
 }
-function handleAction(action){if(action.startsWith('detail:'))openDetail(action.slice(7));else if(action.startsWith('cat:'))navigate('groups',action.slice(4));else if(action.startsWith('group:'))navigate('items',state.category,action.slice(6));else if(action.startsWith('maker:')){state.maker=Object.keys(CAR_CATALOG).sort((a,b)=>a.localeCompare(b))[Number(action.slice(6))];state.modal='models';renderModal();recordNav();}else if(action.startsWith('model:'))chooseCar((CAR_CATALOG[state.maker]||[])[Number(action.slice(6))]);else if(action==='car')openCar();else if(action==='search')openSearch();else if(action==='clearSearch'){if(state.stage==='search'){state.search='';render();recordNav(true);$('searchInput')?.focus();}else {$('searchInput').value='';}}else if(action==='import')$('fileInput').click();else if(action==='export')exportBackup();else if(action==='new')newDemo();else if(action==='deviceInfo')toast('기기 연결이 없는 데모에서는 디바이스 설정을 읽을 수 없습니다.');else if(action==='checkUpdate')checkForUpdate(true);else if(action==='updateDemo')renderUpdateDialog();else if(action==='closeUpdate')closeUpdateDialog();else if(action==='applyHostedUpdate')applyHostedUpdate();else if(action==='saveUpdateBackup'){if(exportBackup())$('updateBody').querySelector('[data-action="downloadUpdate"]').disabled=false;}else if(action==='downloadUpdate'){if(!updateState.assetUrl)return;const link=document.createElement('a');link.href=updateState.assetUrl;link.rel='noopener noreferrer';link.target='_blank';document.body.append(link);link.click();link.remove();closeUpdateDialog();toast('새 HTML을 내려받은 뒤, 방금 저장한 JSON 백업을 불러오세요.');}}
+function handleAction(action){if(action.startsWith('detail:'))openDetail(action.slice(7));else if(action.startsWith('cat:'))navigate('groups',action.slice(4));else if(action.startsWith('group:'))navigate('items',state.category,action.slice(6));else if(action.startsWith('maker:')){state.maker=Object.keys(CAR_CATALOG).sort((a,b)=>a.localeCompare(b))[Number(action.slice(6))];state.modal='models';renderModal();recordNav();}else if(action.startsWith('model:'))chooseCar((CAR_CATALOG[state.maker]||[])[Number(action.slice(6))]);else if(action==='car')openCar();else if(action==='search')openSearch();else if(action==='clearSearch'){if(state.stage==='search'){state.search='';render();recordNav(true);$('searchInput')?.focus();}else {$('searchInput').value='';}}else if(action==='import')$('fileInput').click();else if(action==='export')exportBackup();else if(action==='new')newDemo();else if(action==='deviceInfo')toast('기기 연결이 없는 데모에서는 디바이스 설정을 읽을 수 없습니다.');else if(action.startsWith('previousLegacyUpdate:'))resolveLegacyUpdateChoice(true,Number(action.slice(21)));else if(action==='useLegacyUpdate')resolveLegacyUpdateChoice(true);else if(action==='keepTabBackup')resolveLegacyUpdateChoice(false);else if(action==='checkUpdate')checkForUpdate(true);else if(action==='updateDemo')renderUpdateDialog();else if(action==='closeUpdate')closeUpdateDialog();else if(action==='applyHostedUpdate')applyHostedUpdate();else if(action==='saveUpdateBackup'){if(exportBackup())$('updateBody').querySelector('[data-action="downloadUpdate"]').disabled=false;}else if(action==='downloadUpdate'){if(!updateState.assetUrl)return;const link=document.createElement('a');link.href=updateState.assetUrl;link.rel='noopener noreferrer';link.target='_blank';document.body.append(link);link.click();link.remove();closeUpdateDialog();toast('새 HTML을 내려받은 뒤, 방금 저장한 JSON 백업을 불러오세요.');}}
 function stepSetting(button){
  const p=effectiveParam(BY_NAME.get(button.dataset.step));
  if(!visibleParam(p))return;

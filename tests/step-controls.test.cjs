@@ -107,8 +107,8 @@ function normalizeSettingNumericValue(raw, p, previous = null) {
 }
 
 
-function loadDemo({ storage = new Map(), storageBlocked = false, session = new Map(), sessionFailure = {}, hosted = false, startup: executeStartup = false, navEntries = [] } = {}) {
-  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+function loadDemo({ storage = new Map(), storageBlocked = false, session = new Map(), sessionFailure = {}, hosted = false, search = '', href, startup: executeStartup = false, navEntries = [] } = {}) {
+  const html = fs.readFileSync(process.env.WEBCARROT_TEST_HTML || path.join(__dirname, '..', 'index.html'), 'utf8');
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
   const startup = 'initializeBackup();render();initNavHistory();checkForUpdate();';
   assert.equal(script.split(startup).length, 2, 'Only browser startup is suppressed');
@@ -167,14 +167,21 @@ function loadDemo({ storage = new Map(), storageBlocked = false, session = new M
   };
   const sessionStorage = {
     getItem(key) { if (sessionFailure.read) throw new Error('session read blocked'); return session.get(key) ?? null; },
-    setItem(key, value) { if (sessionFailure.write) throw new Error('session quota exceeded'); session.set(key, String(value)); },
+    setItem(key, value) { if (sessionFailure.write || sessionFailure.writeKeys?.includes(key)) throw new Error('session quota exceeded'); session.set(key, String(value)); },
     removeItem(key) { if (sessionFailure.remove) throw new Error('session removal blocked'); session.delete(key); },
   };
-  const historyEntries = structuredClone(navEntries);
+  const location = new TestURL(href || ((hosted ? 'https://fullmetalsonic.github.io/webcarrot-offline-demo/' : 'https://example.invalid/') + search));
+  location.assign = url => navigations.push(url);
+  const historyEntries = structuredClone(navEntries), historyURLs = [];
+  function updateHistoryURL(url) {
+    if (url === undefined || url === null) return;
+    location.href = new URL(url, location.href).href;
+    historyURLs.push(location.href);
+  }
   const history = {
     get state() { return historyEntries.at(-1); },
-    pushState(entry) { historyEntries.push(entry); },
-    replaceState(entry) { if (historyEntries.length) historyEntries.pop(); historyEntries.push(entry); },
+    pushState(entry, title, url) { historyEntries.push(entry); updateHistoryURL(url); },
+    replaceState(entry, title, url) { if (historyEntries.length) historyEntries.pop(); historyEntries.push(entry); updateHistoryURL(url); },
     back() {
       if (historyEntries.length < 2) return;
       historyEntries.pop();
@@ -188,9 +195,7 @@ function loadDemo({ storage = new Map(), storageBlocked = false, session = new M
     setTimeout: schedule, clearTimeout: id => timers.delete(id),
     confirm(message) { confirmations.push(message); return confirmAnswer; },
     history,
-    location: { ...(hosted
-      ? { origin: 'https://fullmetalsonic.github.io', pathname: '/webcarrot-offline-demo/' }
-      : { origin: 'https://example.invalid', pathname: '/' }), assign(url) { navigations.push(url); } },
+    location,
     window: { localStorage, sessionStorage, addEventListener(type, listener) { listen('window', type, listener); }, scrollTo() {} },
   });
   vm.runInContext(executeStartup ? script : script.replace(startup, ''), context);
@@ -244,7 +249,7 @@ function loadDemo({ storage = new Map(), storageBlocked = false, session = new M
     input.value = String(value);
     dispatch('click', element('choiceApply'), {}, 'choiceApply');
   }
-  return { run, params, numeric, element, dispatch, click, button, advance, confirmations, downloads, navigations, session, sessionFailure, historyEntries, param,
+  return { run, params, numeric, element, dispatch, click, button, advance, confirmations, downloads, navigations, session, sessionFailure, historyEntries, historyURLs, location, param,
     control, card, setRaw, selectStep, press, direct, chooseFile, importText, exportedText,
     importJson: fixture => importText(JSON.stringify(fixture)), confirmAnswer(value) { confirmAnswer = value; },
     async exported() { return JSON.parse(await exportedText()); } };
@@ -761,6 +766,298 @@ function beginImport(demo, name = 'pending.json') {
 function backupStatus(demo) {
   return demo.element('backupStatus').innerHTML + demo.run('renderTools()');
 }
+
+const LEGACY_UPDATE_KEY = 'webcarrot-offline-demo:pending-update-backup';
+const TAB_DRAFT_KEY = 'webcarrot-offline-demo:backup-draft:v1';
+const LEGACY_TARGET = 'v1.0.18';
+const TAB_BACKUP_JSON = '{"StopDistanceCarrot":"700","TabOnly":{"keep":9007199254740993}}';
+const TAB_EXPORTED_JSON = '{\n  "StopDistanceCarrot": "700",\n  "TabOnly": {"keep":9007199254740993}\n}\n';
+const LEGACY_BACKUP_JSON = '{ "StopDistanceCarrot": 800, "VEgoStopping": 50.625000000000000000123, "FutureUnknown": { "integer": 9007199254740993, "nested": [false, 1.234567890123456789012345, null, " 001 "] }, "Text": "  spaced  ", "__proto__": {"kept":true} }';
+const LEGACY_EXPORTED_JSON = '{\n  "StopDistanceCarrot": 800,\n  "VEgoStopping": 50.625000000000000000123,\n  "FutureUnknown": { "integer": 9007199254740993, "nested": [false, 1.234567890123456789012345, null, " 001 "] },\n  "Text": "  spaced  ",\n  "__proto__": {"kept":true}\n}\n';
+
+function legacyUpdateFixture({ cleared = false, draft = true, target = LEGACY_TARGET } = {}) {
+  const draftRaw = draft && !cleared ? JSON.stringify({
+    format: 1, id: 'existing-tab-A', revision: 3, sourceName: 'tab A.json', imported: true,
+    sourceRecognized: 1, dirty: ['StopDistanceCarrot'], json: TAB_BACKUP_JSON,
+  }) : null;
+  const legacyRaw = `{ "target": ${JSON.stringify(target)}, "backup": ${LEGACY_BACKUP_JSON} }`;
+  const session = new Map(draftRaw === null ? [] : [[TAB_DRAFT_KEY, draftRaw]]);
+  if (cleared) session.set(LEGACY_UPDATE_KEY, '{"format":1,"cleared":true}');
+  return { session, storage: new Map([[LEGACY_UPDATE_KEY, legacyRaw]]), legacyRaw, draftRaw };
+}
+
+function assertLegacyChoice(demo) {
+  assert.equal(demo.run('state.recoveryBlocked'), true, 'neither backup is selected implicitly');
+  assert.match(demo.element('backupStatus').innerHTML, /data-action="useLegacyUpdate"/);
+  assert.match(demo.element('backupStatus').innerHTML, /data-action="keepTabBackup"/);
+  demo.click({ action: 'export' });
+  assert.equal(demo.downloads.length, 0, 'an unresolved choice never exports a default or stale backup');
+}
+
+test('Legacy update entry with an existing tab draft requires an explicit backup choice', () => {
+  const fixture = legacyUpdateFixture();
+  const demo = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}&keep=1#settings`, startup: true });
+  assertLegacyChoice(demo);
+  assert.equal(fixture.session.get(TAB_DRAFT_KEY), fixture.draftRaw, 'conflict detection preserves the complete tab draft');
+  const { id, ...choice } = JSON.parse(fixture.session.get(LEGACY_UPDATE_KEY));
+  assert.equal(typeof id, 'string');
+  assert.ok(id.length > 0, 'the durable conflict has an identity for recovery after cleanup failure');
+  assert.deepEqual(choice, { format: 2, kind: 'legacy-choice', target: LEGACY_TARGET, legacyRaw: fixture.legacyRaw, draftRaw: fixture.draftRaw });
+  assert.equal(demo.location.searchParams.has('version'), false, 'a durable choice consumes the update entry marker');
+  assert.equal(demo.location.searchParams.get('keep'), '1');
+  assert.equal(demo.location.hash, '#settings');
+  demo.click({ set: 'StopDistanceCarrot', value: '999' });
+  demo.click({ default: 'StopDistanceCarrot' });
+  assert.equal(fixture.session.get(TAB_DRAFT_KEY), fixture.draftRaw, 'blocked settings actions cannot modify either candidate');
+});
+
+test('Legacy update entry also requires a choice after this tab explicitly started a new demo', () => {
+  const fixture = legacyUpdateFixture({ cleared: true });
+  const demo = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assertLegacyChoice(demo);
+  assert.equal(JSON.parse(fixture.session.get(LEGACY_UPDATE_KEY)).draftRaw, null);
+  assert.equal(fixture.session.has(TAB_DRAFT_KEY), false, 'default previews are never persisted over the legacy candidate');
+});
+
+test('Legacy update selection preserves original raw tokens, nested whitespace and unsupported keys', async () => {
+  const fixture = legacyUpdateFixture();
+  const demo = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assertLegacyChoice(demo);
+  demo.click({ action: 'useLegacyUpdate' });
+  assert.equal(demo.run('state.recoveryBlocked'), false);
+  assert.equal(await demo.exportedText(), LEGACY_EXPORTED_JSON);
+  const pending = fixture.session.get(LEGACY_UPDATE_KEY);
+  assert.ok(pending === undefined || JSON.parse(pending).format === 1 && JSON.parse(pending).cleared === true, 'the saved choice is cleared after the selected draft is saved');
+  assert.equal(await loadDemo({ ...fixture, hosted: true, startup: true }).exportedText(), LEGACY_EXPORTED_JSON);
+});
+
+test('Legacy update keep-tab selection preserves the complete existing draft and the explicit new-demo choice', async () => {
+  for (const cleared of [false, true]) {
+    const fixture = legacyUpdateFixture({ cleared });
+    const demo = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+    assertLegacyChoice(demo);
+    demo.click({ action: 'keepTabBackup' });
+    assert.equal(demo.run('state.recoveryBlocked'), false);
+    const text = await demo.exportedText();
+    if (cleared) {
+      assert.equal(Object.keys(JSON.parse(text)).length, 212);
+      assert.equal(Object.hasOwn(JSON.parse(text), 'FutureUnknown'), false);
+    } else {
+      const { resolvedUpdate, ...saved } = JSON.parse(fixture.session.get(TAB_DRAFT_KEY)), original = JSON.parse(fixture.draftRaw);
+      assert.deepEqual({ ...saved, json: original.json }, original, 'dataset identity, revision, source and dirty keys stay intact');
+      assert.equal(text, TAB_EXPORTED_JSON, 'original value tokens and nested formatting survive the choice');
+    }
+    assert.equal(await loadDemo({ ...fixture, hosted: true, startup: true }).exportedText(), text);
+  }
+});
+
+test('Legacy update unresolved selection survives refresh and shared-candidate replacement without crossing tabs', async () => {
+  const fixture = legacyUpdateFixture();
+  const one = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assertLegacyChoice(one);
+  const snapshot = fixture.session.get(LEGACY_UPDATE_KEY);
+  const replacement = '{"target":"v1.0.18","backup":{"StopDistanceCarrot":"950","OtherTab":true}}';
+  fixture.storage.set(LEGACY_UPDATE_KEY, replacement);
+  one.dispatch('pagehide', null, {}, 'window');
+  assert.equal(fixture.session.get(LEGACY_UPDATE_KEY), snapshot);
+  assert.equal(fixture.session.get(TAB_DRAFT_KEY), fixture.draftRaw);
+  const twoSession = new Map();
+  const two = loadDemo({ storage: fixture.storage, session: twoSession, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assert.deepEqual(await two.exported(), { StopDistanceCarrot: '950', OtherTab: true });
+  fixture.storage.set(LEGACY_UPDATE_KEY, replacement);
+  const refreshed = loadDemo({ ...fixture, hosted: true, href: one.location.href, startup: true });
+  assertLegacyChoice(refreshed);
+  assert.equal(fixture.session.get(LEGACY_UPDATE_KEY), snapshot, 'refresh retains the original per-tab snapshot');
+  refreshed.click({ action: 'useLegacyUpdate' });
+  assert.equal(await refreshed.exportedText(), LEGACY_EXPORTED_JSON);
+  assert.equal(fixture.storage.get(LEGACY_UPDATE_KEY), replacement, 'resolving the older snapshot never removes a changed shared handoff');
+  assert.deepEqual(await two.exported(), { StopDistanceCarrot: '950', OtherTab: true });
+});
+
+test('Legacy update records cannot overwrite current drafts on ordinary or mismatched-version reloads', async () => {
+  for (const search of ['', '?version=v1.0.17', '?version=not-a-version']) {
+    const fixture = legacyUpdateFixture();
+    const demo = loadDemo({ ...fixture, hosted: true, search, startup: true });
+    assert.equal(demo.run('state.recoveryBlocked'), false, search);
+    assert.deepEqual(await demo.exported(), JSON.parse(TAB_BACKUP_JSON));
+    assert.equal(fixture.storage.get(LEGACY_UPDATE_KEY), fixture.legacyRaw);
+    assert.equal(fixture.session.get(TAB_DRAFT_KEY), fixture.draftRaw);
+  }
+  const fixture = legacyUpdateFixture({ target: 'v1.0.17' });
+  fixture.storage.set(LEGACY_UPDATE_KEY, '{"target":"v1.0.17","backup":[]}');
+  const demo = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assert.equal(demo.run('state.recoveryBlocked'), false, 'a nonmatching handoff is ignored before validating its backup');
+  assert.equal(await demo.exportedText(), TAB_EXPORTED_JSON);
+});
+
+test('Legacy update entry without a competing tab backup restores automatically', async () => {
+  const fixture = legacyUpdateFixture({ draft: false });
+  const demo = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assert.equal(demo.run('state.recoveryBlocked'), false);
+  assert.equal(await demo.exportedText(), LEGACY_EXPORTED_JSON);
+  assert.ok(fixture.session.has(TAB_DRAFT_KEY));
+  assert.equal(demo.location.searchParams.has('version'), false);
+  assert.equal(await loadDemo({ ...fixture, hosted: true, startup: true }).exportedText(), LEGACY_EXPORTED_JSON);
+});
+
+test('Legacy update unresolved choices can be replaced explicitly by a JSON import or a new demo', async () => {
+  for (const replacement of ['import', 'new']) {
+    const fixture = legacyUpdateFixture();
+    const demo = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+    assertLegacyChoice(demo);
+    if (replacement === 'import') await demo.importText('{"StopDistanceCarrot":"720","Recovered":9007199254740993}', 'chosen.json');
+    else demo.click({ action: 'new' });
+    const text = await demo.exportedText();
+    assert.equal(demo.run('state.recoveryBlocked'), false);
+    if (replacement === 'import') assert.match(text, /"Recovered": 9007199254740993/);
+    else assert.equal(Object.keys(JSON.parse(text)).length, 212);
+    const refreshed = loadDemo({ ...fixture, hosted: true, href: demo.location.href, startup: true });
+    assert.equal(await refreshed.exportedText(), text, replacement + ': deliberate replacement is not followed by an old choice');
+  }
+});
+
+test('Legacy update snapshot storage failures retain both originals and the update URL while blocking defaults', async () => {
+  const fixture = legacyUpdateFixture(), sessionFailure = { write: true };
+  const demo = loadDemo({ ...fixture, sessionFailure, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assert.equal(demo.run('state.recoveryBlocked'), true);
+  demo.click({ action: 'export' });
+  demo.click({ set: 'StopDistanceCarrot', value: '999' });
+  assert.equal(demo.downloads.length, 0);
+  assert.equal(fixture.session.get(TAB_DRAFT_KEY), fixture.draftRaw);
+  assert.equal(fixture.storage.get(LEGACY_UPDATE_KEY), fixture.legacyRaw);
+  assert.equal(demo.location.searchParams.get('version'), LEGACY_TARGET, 'the URL is consumed only after the choice is durable');
+  assert.match(backupStatus(demo), /저장|보관|실패|못/);
+  sessionFailure.write = false;
+  const recovered = loadDemo({ ...fixture, hosted: true, href: demo.location.href, startup: true });
+  assertLegacyChoice(recovered);
+  recovered.click({ action: 'useLegacyUpdate' });
+  assert.equal(await recovered.exportedText(), LEGACY_EXPORTED_JSON);
+});
+
+test('Legacy update selection keeps its durable snapshot when saving the chosen draft fails', async () => {
+  const fixture = legacyUpdateFixture(), sessionFailure = {};
+  const demo = loadDemo({ ...fixture, sessionFailure, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assertLegacyChoice(demo);
+  const snapshot = fixture.session.get(LEGACY_UPDATE_KEY);
+  sessionFailure.write = true;
+  demo.click({ action: 'useLegacyUpdate' });
+  assert.equal(demo.run('state.recoveryBlocked'), true, 'failed selection remains unresolved');
+  demo.click({ action: 'export' });
+  assert.equal(demo.downloads.length, 0);
+  assert.equal(fixture.session.get(LEGACY_UPDATE_KEY), snapshot);
+  assert.equal(fixture.session.get(TAB_DRAFT_KEY), fixture.draftRaw);
+  sessionFailure.write = false;
+  const refreshed = loadDemo({ ...fixture, hosted: true, href: demo.location.href, startup: true });
+  assertLegacyChoice(refreshed);
+  refreshed.click({ action: 'useLegacyUpdate' });
+  assert.equal(await refreshed.exportedText(), LEGACY_EXPORTED_JSON);
+});
+
+test('Legacy update conflicts retain a native session handoff through explicit keep-tab selection', async () => {
+  const storage = new Map(), session = new Map();
+  const original = loadDemo({ storage, session, hosted: true, startup: true });
+  await original.importText(TAB_BACKUP_JSON, 'native.json');
+  const text = await original.exportedText();
+  original.run('storePendingUpdate("v1.0.18")');
+  storage.set(LEGACY_UPDATE_KEY, legacyUpdateFixture().legacyRaw);
+  const reopened = loadDemo({ storage, session, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assertLegacyChoice(reopened);
+  reopened.click({ action: 'keepTabBackup' });
+  assert.equal(reopened.run('state.recoveryBlocked'), false);
+  assert.equal(await reopened.exportedText(), text);
+  assert.doesNotMatch(reopened.element('backupStatus').innerHTML, /data-action="useLegacyUpdate"/);
+});
+
+test('Legacy update imports remain resolved when only snapshot-cleanup writes fail', async () => {
+  const fixture = legacyUpdateFixture(), sessionFailure = {};
+  const demo = loadDemo({ ...fixture, sessionFailure, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assertLegacyChoice(demo);
+  const snapshot = fixture.session.get(LEGACY_UPDATE_KEY);
+  sessionFailure.writeKeys = [LEGACY_UPDATE_KEY];
+  await demo.importText('{"StopDistanceCarrot":"720","ExplicitReplacement":9007199254740993}', 'chosen C.json');
+  const text = await demo.exportedText();
+  assert.match(text, /"ExplicitReplacement": 9007199254740993/);
+  assert.equal(fixture.session.get(LEGACY_UPDATE_KEY), snapshot, 'the simulated cleanup write failed');
+  const draft = JSON.parse(fixture.session.get(TAB_DRAFT_KEY));
+  assert.equal(draft.resolvedUpdate, JSON.parse(snapshot).id, 'the saved replacement records which conflict it resolved');
+  const refreshed = loadDemo({ ...fixture, hosted: true, href: demo.location.href, startup: true });
+  assert.equal(refreshed.run('state.recoveryBlocked'), false);
+  assert.equal(await refreshed.exportedText(), text, 'a cleanup failure cannot let the old A/B choice hide imported C');
+});
+
+test('Legacy update markers are consumed after a native handoff so later shared writes cannot reopen a conflict', async () => {
+  const storage = new Map(), session = new Map();
+  const original = loadDemo({ storage, session, hosted: true, startup: true });
+  await original.importText(TAB_BACKUP_JSON, 'native.json');
+  const text = await original.exportedText();
+  original.run('storePendingUpdate("v1.0.18")');
+  const reopened = loadDemo({ storage, session, hosted: true, search: `?version=${LEGACY_TARGET}&keep=native#settings`, startup: true });
+  assert.equal(reopened.run('state.recoveryBlocked'), false);
+  assert.equal(await reopened.exportedText(), text);
+  assert.equal(reopened.location.searchParams.has('version'), false, 'successful native initialization consumes the update entry marker');
+  assert.equal(reopened.location.searchParams.get('keep'), 'native');
+  assert.equal(reopened.location.hash, '#settings');
+  const legacyRaw = legacyUpdateFixture().legacyRaw;
+  storage.set(LEGACY_UPDATE_KEY, legacyRaw);
+  const refreshed = loadDemo({ storage, session, hosted: true, href: reopened.location.href, startup: true });
+  assert.equal(refreshed.run('state.recoveryBlocked'), false);
+  assert.equal(await refreshed.exportedText(), text);
+  assert.equal(storage.get(LEGACY_UPDATE_KEY), legacyRaw, 'an ordinary reload leaves a later shared handoff untouched');
+});
+
+test('Legacy update corrupt choice snapshots can be replaced by an import that remains selected after refresh', async () => {
+  for (const search of ['', `?version=${LEGACY_TARGET}`]) {
+    const fixture = legacyUpdateFixture();
+    fixture.session.set(LEGACY_UPDATE_KEY, JSON.stringify({
+      format: 2, kind: 'legacy-choice', id: 'corrupt-choice', target: LEGACY_TARGET,
+      legacyRaw: '{broken', draftRaw: fixture.draftRaw,
+    }));
+    const demo = loadDemo({ ...fixture, hosted: true, search, startup: true });
+    assert.equal(demo.run('state.recoveryBlocked'), true);
+    demo.click({ action: 'export' });
+    assert.equal(demo.downloads.length, 0);
+    await demo.importText('{"StopDistanceCarrot":"730","ReplacementC":9007199254740993}', 'chosen C.json');
+    const text = await demo.exportedText();
+    assert.match(text, /"ReplacementC": 9007199254740993/);
+    assert.equal(demo.run('state.recoveryBlocked'), false);
+    const refreshed = loadDemo({ ...fixture, hosted: true, href: demo.location.href, startup: true });
+    assert.equal(refreshed.run('state.recoveryBlocked'), false, 'a deliberate import replaces the corrupt choice even on an update landing');
+    assert.equal(await refreshed.exportedText(), text);
+  }
+});
+
+test('Legacy update fresh landings offer the newest candidate while preserving earlier unselected backups', async () => {
+  const fixture = legacyUpdateFixture();
+  const first = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}`, startup: true });
+  assertLegacyChoice(first);
+  const originalChoice = JSON.parse(fixture.session.get(LEGACY_UPDATE_KEY));
+  const newestRaw = '{"target":"v1.0.18","backup":{"StopDistanceCarrot":"940","NewestC":9007199254740993}}';
+  fixture.storage.set(LEGACY_UPDATE_KEY, newestRaw);
+  const fresh = loadDemo({ ...fixture, hosted: true, search: `?version=${LEGACY_TARGET}&keep=retry#settings`, startup: true });
+  assertLegacyChoice(fresh);
+  assert.match(fresh.element('backupStatus').innerHTML, /data-action="previousLegacyUpdate:0"/);
+  const choice = JSON.parse(fixture.session.get(LEGACY_UPDATE_KEY));
+  assert.notEqual(choice.id, originalChoice.id, 'a fresh update entry has its own recovery identity');
+  assert.equal(choice.legacyRaw, newestRaw);
+  assert.equal(choice.draftRaw, fixture.draftRaw);
+  assert.deepEqual(choice.previousLegacyRaws, [fixture.legacyRaw]);
+  assert.equal(fresh.location.searchParams.has('version'), false);
+  assert.equal(fresh.location.searchParams.get('keep'), 'retry');
+  assert.equal(fresh.location.hash, '#settings');
+  for (const [action, expected] of [
+    ['useLegacyUpdate', '{\n  "StopDistanceCarrot": "940",\n  "NewestC": 9007199254740993\n}\n'],
+    ['previousLegacyUpdate:0', LEGACY_EXPORTED_JSON],
+    ['keepTabBackup', TAB_EXPORTED_JSON],
+  ]) {
+    const session = new Map(fixture.session), storage = new Map(fixture.storage);
+    const restored = loadDemo({ session, storage, hosted: true, href: fresh.location.href, startup: true });
+    assertLegacyChoice(restored);
+    restored.click({ action });
+    assert.equal(await restored.exportedText(), expected, action);
+    assert.equal(await loadDemo({ session, storage, hosted: true, startup: true }).exportedText(), expected, action + ': the selected candidate survives refresh');
+    if (action !== 'useLegacyUpdate') assert.equal(storage.get(LEGACY_UPDATE_KEY), newestRaw, 'an older selection never removes the newest shared candidate');
+  }
+});
 
 test('Actual file input commits the last selected file when reads finish in reverse order', async () => {
   const demo = loadDemo(), first = beginImport(demo, 'A.json'), last = beginImport(demo, 'B.json');
