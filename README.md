@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.15 | WebCarrot Offline Settings Demo v1.0.15
+# WebCarrot 오프라인 설정 데모 v1.0.16 | WebCarrot Offline Settings Demo v1.0.16
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -29,6 +29,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
+- **v1.0.16**은 공식 carrot-wip [0df8361](https://github.com/ajouatom/openpilot/commit/0df83618f196357165a29218c9a588b0131c7d20) 기준입니다. 수동 턴 자동깜박이와 Tesla CAN 빨간불 정지·수동 차로변경 램프·모델 의도 램프·모델 경로 램프 설정을 추가했습니다. 새 항목은 모두 기본 꺼짐이며, 원본의 전체 설명·주의문과 메뉴 순서를 반영했습니다. 수동 차로변경 표시·항상 조향·Tesla 자동 방향지시등·현대 카메라 SCC 설명도 갱신했습니다.
 - **v1.0.15**는 공식 ajouatom/openpilot의 carrot-wip 커밋 [14c5398](https://github.com/ajouatom/openpilot/commit/14c5398fca00d298c2791ecf43f46b3e3fd6cc38)을 기준으로 합니다. `CommaPedalEnabled`를 추가하고 우회전 전 자동 차선변경을 0~500m 거리 설정으로 갱신했습니다. 그 설정에서 `1`은 최신 콤마에서 기존 켜짐 값인 250m로 해석됩니다.
 - 배율은 **x1 → x2 → x5 → x10 → x50 → x100** 순서로 바뀌고, 각 설정의 배율은 같은 브라우저에서 유지됩니다. ±를 누른 채 0.9초가 지나면 약 0.16초 간격으로 반복합니다. 직접 입력은 원본처럼 범위를 벗어난 숫자를 경계값으로 맞추고 정수로 반올림합니다. **무게중심 비율**의 0 또는 31~69 규칙도 적용합니다.
 - 차량 문서 이름은 333개로 유지됩니다. v1.0.10에서 기존 데모 차량 목록에 누락됐던 Tesla Model 3·Model Y의 HW3/HW4 문서 이름 4개를 복구해 공식 목록 333개와 맞췄습니다. 이번 업스트림에 새로 추가된 차종은 아닙니다.
@@ -42,7 +43,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 데모의 범위
 
-현재 임베디드 원본 정의에는 **파라미터 207개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
+현재 임베디드 원본 정의에는 **파라미터 212개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 공식 복원 코드를 시험용 저장소에서 검증했으며, 실제 콤마 복원과 재시작 후 값 확인은 별도입니다.
 
@@ -85,6 +86,7 @@ Recognized Hyundai/Kia/Genesis and Toyota/Lexus models follow the official visib
 
 ### Updates
 
+- **v1.0.16** follows official carrot-wip [0df8361](https://github.com/ajouatom/openpilot/commit/0df83618f196357165a29218c9a588b0131c7d20). It adds Manual Turn Indicator and Tesla CAN Red Light Stop, Manual Lane Lamps, Model Desire Lamps and Model Path Lamps. All five default to OFF. Full upstream descriptions, cautions and menu order are included, with revised descriptions for Manual Lane Change Indicator, Always Lateral, Tesla Automatic Turn Signals and Hyundai Camera SCC.
 - **v1.0.15** follows official ajouatom/openpilot carrot-wip commit [14c5398](https://github.com/ajouatom/openpilot/commit/14c5398fca00d298c2791ecf43f46b3e3fd6cc38). It adds `CommaPedalEnabled` and updates the pre-turn lane-change setting to a 0–500m distance. Current device code interprets the stored value `1` as the legacy enabled value of 250m.
 - The **x1 → x2 → x5 → x10 → x50 → x100** cycle persists per setting in the same browser. Holding ± repeats after 0.9 seconds and then about every 0.16 seconds. Direct entry clamps to the allowed range and rounds to integers, including the **center of gravity ratio** rule of 0 or 31–69.
 - The catalog remains at 333 vehicle document names. In v1.0.10, four previously omitted Tesla Model 3/Model Y HW3/HW4 document names were restored, matching the 333-name official catalog. These are corrections to the existing demo, not newly added upstream vehicles.
@@ -98,7 +100,7 @@ Recognized Hyundai/Kia/Genesis and Toyota/Lexus models follow the official visib
 
 ### Scope
 
-The embedded upstream definitions currently include **207 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
+The embedded upstream definitions currently include **212 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
 The demo does not automatically track changes in upstream carrot-wip. Restore compatibility was checked with the official code and a test parameter store; a physical Comma restore and post-restart readback are separate checks.
 

@@ -7,11 +7,12 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 // Frozen oracles from openpilot/selfdrive/carrot at this official commit.
-const OFFICIAL_SHA = '14c5398fca00d298c2791ecf43f46b3e3fd6cc38';
+const OFFICIAL_SHA = '0df83618f196357165a29218c9a588b0131c7d20';
 // web/js/pages/setting.js:781 and web/src/ui/components/numeric_stepper/numeric_stepper.js:18.
 // Official config.py UNIT_CYCLE; this is the actual increment, not p.unit times it.
 const EXPECTED_STEPS = [1, 2, 5, 10, 50, 100];
 const SETTING_CONTROL_KINDS = ["toggle", "segmented", "select", "slider"];
+const WEEKLY_TOGGLES = ['ManualTurnIndicator', 'TeslaCanTrafficStop', 'TeslaManualLaneSignals', 'TeslaModelDesireSignals', 'TeslaModelPathSignals'];
 
 function getSettingControlConfig(p) {
   // A parameter pins its control with a "control" field in
@@ -216,8 +217,8 @@ test('Embedded settings schema and menu match the frozen official source', () =>
   const demo = loadDemo();
   assert.equal(demo.run('SOURCE_SHA'), OFFICIAL_SHA);
   const schemaDigest = createHash('sha256').update(demo.run('JSON.stringify(SCHEMA)')).digest('hex');
-  assert.equal(schemaDigest, '871f4530a79dcc5423e0a63fad12dab1a067a27a4d5bc724d9548a56623df912');
-  assert.equal(demo.params.length, 207);
+  assert.equal(schemaDigest, '3934387ed6e9112675b369421a1972cb273fab1fbafd19e2943a6c7150bd0574');
+  assert.equal(demo.params.length, 212);
   assert.equal(demo.numeric.length, 102);
   assert.equal(demo.run('Object.values(CAR_CATALOG).flat().length'), 333);
 });
@@ -368,6 +369,110 @@ test('Official additions retain menu paths, detail visibility, search and contro
     assert.equal(demo.run('state.backup.ClusterHudScreenMode'), String(value));
     assert.equal(demo.element('choiceOverlay').hidden, true);
   }
+});
+
+test('Weekly additions retain the official menu order, full descriptions and warnings through navigation', () => {
+  const demo = loadDemo();
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /\.setting-descr\{[^}]*line-height:1\.7[;}]/, 'official description row spacing');
+  demo.click({ action: 'cat:DRIVING' });
+  assert.match(demo.element('screen').innerHTML, /data-action="group:START_AUTO"/);
+  assert.match(demo.element('screen').innerHTML, /data-action="group:STEER"/);
+  for (const [group, sections] of [
+    ['START_AUTO', [
+      ['시작 동작', ['AlwaysLateral', 'TeslaAutoTurnSignals', ...WEEKLY_TOGGLES.slice(1), 'AutoEngage', 'DisableMinSteerSpeed']],
+      ['오토크루즈', ['AutoCruiseControl', 'SoftHoldOnCancel', 'AutoGasTokSpeed', 'AutoGasCancelSpeed', 'AutoGasSyncSpeed', 'CruiseOnDist']],
+    ]],
+    ['STEER', [
+      ['차로 변경 (자동 턴)', ['LaneChangeNeedTorque', 'LaneChangeDelay', 'LaneChangeBsd', 'LaneLineCheck', 'AutoBlinkerControl',
+        'ManualLaneChangeIndicator', 'ManualTurnIndicator', 'ModelDesireIndicator', 'ModelPathIndicator', 'BlinkerLatchedTurn',
+        'LaneChangeLeverWait', 'AutoTurnControl', 'AutoTurnControlSpeedTurn', 'AutoTurnControlTurnEnd', 'AutoTurnMapChange']],
+    ]],
+  ]) {
+    demo.click({ action: 'group:' + group });
+    const screen = demo.element('screen').innerHTML;
+    for (const [title, names] of sections) {
+      const section = screen.split(`<h2 class="section-title">${title}</h2>`)[1]?.split('<h2 class="section-title">')[0];
+      assert.ok(section, group + ': ' + title);
+      assert.deepEqual([...section.matchAll(/data-param="([^"]+)"/g)].map(match => match[1]), names);
+    }
+  }
+  for (const name of WEEKLY_TOGGLES) {
+    const expectedPath = name === 'ManualTurnIndicator' ? ['DRIVING', 'STEER', 'STEER_LANECHANGE'] : ['DRIVING', 'START_AUTO', 'BASIC_START'];
+    assert.deepEqual(JSON.parse(demo.run(`JSON.stringify(paramPath(${JSON.stringify(name)}).map(x=>x.id))`)), expectedPath);
+    demo.click({ action: 'search' });
+    const input = demo.element('searchInput');
+    input.value = name;
+    demo.dispatch('input', input);
+    assert.match(demo.element('searchContent').innerHTML, new RegExp(`data-param="${name}"`));
+    demo.click({ action: 'detail:' + name });
+    assert.match(demo.element('screen').innerHTML, /<span class="risk">주의<\/span>/);
+    assert.ok(demo.element('screen').innerHTML.includes(`<p class="setting-descr">${demo.run(`esc(BY_NAME.get(${JSON.stringify(name)}).descr)`)}</p>`), name + ': complete warning/description');
+  }
+  for (const [name, revisedText] of [
+    ['ManualLaneChangeIndicator', '0.3초 뒤를 예측'],
+    ['AlwaysLateral', '세 손가락 접촉마다'],
+    ['TeslaAutoTurnSignals', '실차 검증 전 일반 도로에서 사용하지 마세요.'],
+    ['HyundaiCameraSCC', '계기판용 순정 SCC MAIN 상태와 캐럿의 활성 선택을 분리'],
+  ]) {
+    demo.click({ action: 'detail:' + name });
+    const card = demo.element('screen').innerHTML;
+    assert.ok(card.includes(revisedText), name + ': revised description');
+    assert.ok(card.includes(`<p class="setting-descr">${demo.run(`esc(BY_NAME.get(${JSON.stringify(name)}).descr)`)}</p>`), name + ': complete description');
+  }
+  assert.deepEqual([...demo.element('screen').innerHTML.matchAll(/data-set="HyundaiCameraSCC" data-value="([^"]+)"/g)].map(match => Number(match[1])), [0, 1, 2, 3]);
+  demo.click({ set: 'HyundaiCameraSCC', value: '2' });
+  assert.match(demo.control(demo.param('HyundaiCameraSCC')), /class="active" data-set="HyundaiCameraSCC" data-value="2"/);
+});
+
+test('Weekly default-off toggle controls edit only their own key through production clicks', async () => {
+  const demo = loadDemo();
+  const defaults = await demo.exported();
+  for (const name of WEEKLY_TOGGLES) {
+    const p = demo.param(name);
+    assert.deepEqual([p.min, p.max, p.default, p.risk], [0, 1, 0, 'high'], name);
+    assert.equal(defaults[name], '0');
+    assert.doesNotMatch(demo.card(p), /data-(?:mult|choice|step|edit)=/);
+    for (const value of ['1', '0']) {
+      const control = demo.control(p);
+      assert.match(control, new RegExp(`role="switch" aria-checked="${value === '0'}"`));
+      const toggle = control.match(/data-set="([^"]+)" data-value="([^"]+)"/);
+      assert.deepEqual(toggle.slice(1), [name, value]);
+      demo.click({ set: toggle[1], value: toggle[2] });
+      assert.deepEqual(await demo.exported(), { ...defaults, [name]: value });
+    }
+  }
+});
+
+test('Weekly toggle imports preserve missing keys, original types, nested values and precision until edited', async () => {
+  const demo = loadDemo();
+  const text = '{"ManualTurnIndicator":1,"TeslaCanTrafficStop":"True","TeslaManualLaneSignals":false,"TeslaModelDesireSignals":{"nested":[false,null,9007199254740993],"ratio":1.234567890123456789012345},"TeslaModelPathSignals":null,"VEgoStopping":50.625000000000000000123,"FutureUnknown":{"values":["001",true,null],"exact":9.876543210987654321}}';
+  const fixture = JSON.parse(text);
+  for (const name of WEEKLY_TOGGLES) {
+    await demo.importText(text);
+    demo.click({ action: 'cat:DRIVING' });
+    demo.click({ action: 'group:START_AUTO' });
+    demo.click({ action: 'group:STEER' });
+    demo.click({ action: 'detail:' + name });
+    assert.deepEqual(await demo.exported(), fixture, name + ': display leaves every raw value intact');
+    assert.equal(demo.run('state.dirty.size'), 0);
+    const toggle = demo.control(demo.param(name)).match(/data-set="([^"]+)" data-value="([^"]+)"/);
+    demo.click({ set: toggle[1], value: toggle[2] });
+    assert.deepEqual(await demo.exported(), { ...fixture, [name]: toggle[2] }, name + ': only explicit edit changes the key');
+    const exported = await demo.exportedText();
+    assert.match(exported, /"VEgoStopping"\s*:\s*50\.625000000000000000123\b/);
+    assert.match(exported, /"exact"\s*:\s*9\.876543210987654321\b/);
+    if (name !== 'TeslaModelDesireSignals') {
+      assert.match(exported, /9007199254740993\b/);
+      assert.match(exported, /1\.234567890123456789012345\b/);
+    }
+  }
+  await demo.importJson({ FutureUnknown: { untouched: [false, null] } });
+  for (const name of WEEKLY_TOGGLES) {
+    demo.click({ action: 'detail:' + name });
+    assert.match(demo.element('screen').innerHTML, /data-missing/);
+  }
+  assert.deepEqual(await demo.exported(), { FutureUnknown: { untouched: [false, null] } }, 'viewing missing default-off toggles never inserts them');
 });
 
 test('ATC distance is a 0–500 numeric row and x1 preserves the official stored value', () => {
