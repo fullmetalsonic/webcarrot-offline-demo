@@ -42,7 +42,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <div id="updateOverlay" class="modal" role="dialog" aria-modal="true" aria-labelledby="updateTitle" hidden><div class="modal-sheet"><div class="modal-header"><div><strong id="updateTitle">데모 업데이트</strong><span id="updateSubtitle"></span></div><button class="modal-cancel" type="button" data-action="closeUpdate">닫기</button></div><div id="updateBody" class="update-body"></div></div></div>
 </div>
 <script>
-const DEMO_VERSION = '1.0.17';
+const DEMO_VERSION = '1.0.18';
 const UPDATE_REPO = 'fullmetalsonic/webcarrot-offline-demo';
 const UPDATE_PAGES_URL = 'https://fullmetalsonic.github.io/webcarrot-offline-demo/';
 const UPDATE_ASSET = 'webcarrot-offline-demo.html';
@@ -73,31 +73,51 @@ function defaultBackup(){return Object.fromEntries(PARAMS.map(p=>[p.name,String(
 function shown(p){return own(state.backup,p.name)?state.backup[p.name]:p.default;}
 // Pinned common/params_keys.h BOOL keys; the two unregistered display keys use params.py's bool inference.
 const BOOLEAN_PARAMS=new Set(['ManualLaneChangeIndicator','ManualTurnIndicator','ModelDesireIndicator','ModelPathIndicator','SoftHoldOnCancel','TeslaAutoTurnSignals','TeslaCanTrafficStop','TeslaManualLaneSignals','TeslaModelDesireSignals','TeslaModelPathSignals','CanfdBlinkerControl','UseWideCamera','DriverMonitoringEnabled','CarrotVisionEnabled','ShowPathEnd','ShowRouteInfo','LaneChangeLeverWait','HyundaiCanfdClusterDirectTx','RadarTrackFlip','LeadBrakeLights','VehicleNaviSchoolZoneControl','VehicleNaviDecelCancel','VehicleNaviDecelCancelBox','VehicleNaviDecelCancelMobileZone','VehicleNaviDecelCancelBump','VehicleNaviDecelCancelUnknown','VehicleNaviDecelCancelEarlyWarning','VehicleNaviSectionAvgControl']);
+// Python 3.12 unicodedata 15.0 decimal zeroes; browser Unicode updates must not expand restore inputs.
+const SOURCE_DECIMAL_ZEROES=[0x30,0x660,0x6f0,0x7c0,0x966,0x9e6,0xa66,0xae6,0xb66,0xbe6,0xc66,0xce6,0xd66,0xde6,0xe50,0xed0,0xf20,0x1040,0x1090,0x17e0,0x1810,0x1946,0x19d0,0x1a80,0x1a90,0x1b50,0x1bb0,0x1c40,0x1c50,0xa620,0xa8d0,0xa900,0xa9d0,0xa9f0,0xaa50,0xabf0,0xff10,0x104a0,0x10d30,0x11066,0x110f0,0x11136,0x111d0,0x112f0,0x11450,0x114d0,0x11650,0x116c0,0x11730,0x118e0,0x11950,0x11c50,0x11d50,0x11da0,0x11f50,0x16a60,0x16ac0,0x16b50,0x1d7ce,0x1d7d8,0x1d7e2,0x1d7ec,0x1d7f6,0x1e140,0x1e2f0,0x1e4f0,0x1e950,0x1fbf0];
+function asciiDecimalDigit(digit){
+ const code=digit.codePointAt(0);
+ if(code<128)return digit;
+ const start=SOURCE_DECIMAL_ZEROES.find(zero=>code>=zero&&code<zero+10);
+ return start===undefined?digit:String(code-start);
+}
+function parseBackupInteger(raw){
+ // params.py _to_int uses Python float/round; native put_int then enforces int32.
+ let number;
+ if(typeof raw==='string'){
+  let text=raw.replace(/^[\x09-\x0d\x20\x85\xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+|[\x09-\x0d\x20\x85\xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+$/g,'');
+  text=Array.from(text,asciiDecimalDigit).join('');
+  if(/(^|[^0-9])_|_([^0-9]|$)/.test(text))return null;
+  text=text.replaceAll('_','');
+  if(!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(text))return null;
+  number=Number(text);
+ }else if(typeof raw==='number'||typeof raw==='boolean')number=Number(raw);
+ else return null;
+ if(!Number.isFinite(number))return null;
+ const floor=Math.floor(number),fraction=number-floor;
+ const integer=fraction===0.5?(floor%2===0?floor:floor+1):Math.round(number);
+ return integer>=-2147483648&&integer<=2147483647?(integer===0?0:integer):null;
+}
 function booleanBackupValue(p){
  if(p.min!==0||p.max!==1)return null;
  const raw=shown(p);
  if(raw!==null&&typeof raw==='object')return null;
  if(BOOLEAN_PARAMS.has(p.name))return typeof raw==='string'?Number(['1','true','on','yes'].includes(raw.trim().toLowerCase())):Number(Boolean(raw));
- if(raw===null||!['number','string','boolean'].includes(typeof raw)||typeof raw==='string'&&!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(raw.trim()))return null;
- const number=Number(raw);
- if(!Number.isFinite(number))return null;
- const floor=Math.floor(number),fraction=number-floor;
- const integer=fraction===0.5?(floor%2===0?floor:floor+1):Math.round(number);
- return integer;
+ return parseBackupInteger(raw);
 }
 function effectiveParam(p,backup=state.backup){
  if(p?.name!=='CruiseGapLevels')return p;
- const raw=backup?.LongitudinalPersonalityMax;
- const max=raw===4||(typeof raw==='string'&&/^\s*\+?0*4\s*$/.test(raw))?4:3;
+ const max=parseBackupInteger(backup?.LongitudinalPersonalityMax)===4?4:3;
  if(p.max===max)return p;
  const original=BY_NAME.get(p.name);
  return {...original,max,default:max,options:Object.fromEntries(Object.entries(original.options).map(([locale,labels])=>[locale,labels.slice(0,max-1)]))};
 }
 function controlValue(p){
  const raw=shown(p);
- if(p.name!=='CruiseGapLevels')return booleanBackupValue(p)??raw;
- const requested=typeof raw==='number'||typeof raw==='boolean'||(typeof raw==='string'&&/^\s*[+-]?\d+\s*$/.test(raw))?Number(raw):NaN;
- return requested>0&&Number.isFinite(requested)?Math.min(p.max,Math.max(p.min,Math.trunc(requested))):p.default;
+ if(p.name==='SoundLanguageSetting')return normalizeSoundLanguage(raw);
+ const integer=BOOLEAN_PARAMS.has(p.name)?booleanBackupValue(p):parseBackupInteger(raw);
+ if(integer===null)return raw;
+ return p.name==='CruiseGapLevels'?(integer>0?Math.min(p.max,Math.max(p.min,integer)):p.default):integer;
 }
 function displayValue(value){return value!==null&&typeof value==='object'?JSON.stringify(value):String(value);}
 function toast(message,error=false){const el=$('toast');el.textContent=message;el.style.borderColor=error?'#aa6262':'#6a574b';el.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.hidden=true,9000);}
@@ -199,7 +219,7 @@ function renderSearchResults(found){const groupMap=new Map();for(const p of foun
 function optionLabel(p,value){if(Number(value)===0&&p.zero_label)return p.zero_label.ko||p.zero_label.en||null;const labels=p.options?.ko||p.options?.en;const index=Number(value)-Number(p.min??0);return Array.isArray(labels)&&Number.isInteger(index)?labels[index]??null:null;}
 function settingValueLabel(p,value){
  const unit=unitLabels[p.display_unit]??p.display_unit??'';
- return (p.name==='SoundLanguageSetting'?soundLanguages.get(value):optionLabel(p,value))??`${value}${unit}`;
+ return (p.name==='SoundLanguageSetting'?soundLanguages.get(normalizeSoundLanguage(value))??String(value??'').trim():optionLabel(p,value))??`${value}${unit}`;
 }
 function settingRangeLabel(p){
  if(p.name==='SoundLanguageSetting')return '';
@@ -221,6 +241,7 @@ function cycleStep(name){
 }
 function settingControlKind(p){if(p.name==='SoundLanguageSetting')return 'select';const range=p.max-p.min+1;let kind=p.control;if(!kind){if(p.min===0&&p.max===1)kind='toggle';else if(Number.isInteger(range)&&range>=2&&range<=4)kind='segmented';else if(Number.isInteger(range)&&range>=5&&range<=8)kind='select';else kind='value';}return kind==='slider'?'value':kind;}
 const soundLanguages=new Map([['auto','자동'],['en','English'],['ko','한국어'],['zh-CHS','中文']]);
+function normalizeSoundLanguage(value){const text=String(value??'').trim(),normalized=text.toLowerCase();return [...soundLanguages.keys()].find(code=>code.toLowerCase()===normalized)||text||'auto';}
 function settingControl(p){p=effectiveParam(p);const value=displayValue(controlValue(p));if(p.name==='SoundLanguageSetting')return `<button class="select-value" type="button" data-choice="${attr(p.name)}" aria-label="${attr(p.title)}">${esc(soundLanguages.get(value)??value)}</button>`;const number=Number(value);const range=p.max-p.min+1;const kind=settingControlKind(p);
  if(p.min===0&&p.max===1&&(booleanBackupValue(p)===null||number<0||number>1))return `<div class="hint">원본 값 해석·범위 확인 필요: ${esc(state.backupRaw.get(p.name)??JSON.stringify(shown(p)))}${booleanBackupValue(p)===null?'':` · 원본 변환값 ${esc(value)}`}<div class="segments" role="group" aria-label="${attr(p.title)} 명시 설정">${[0,1].map(next=>`<button type="button" data-set="${attr(p.name)}" data-value="${next}">${next===0?'OFF (0)':'ON (1)'}</button>`).join('')}</div></div>`;
  if(kind==='toggle'&&p.min===0&&p.max===1)return `<button class="switch ${number===1?'on':''}" type="button" role="switch" aria-checked="${number===1}" aria-label="${attr(p.title)}" data-set="${attr(p.name)}" data-value="${number===1?0:1}"></button>`;
@@ -234,7 +255,9 @@ function settingCard(p){
  const risk=p.risk==='high'?'<span class="risk">주의</span>':p.risk==='medium'?'<span class="risk medium">참고</span>':'';
  const raw=displayValue(shown(p));
  const value=displayValue(controlValue(p));
- const valueHint=raw===value?'':`<div class="hint" data-raw-hint>백업 원본 ${esc(state.backupRaw.get(p.name)??JSON.stringify(shown(p)))} · 화면 표시 ${esc(optionLabel(p,value)??value)} · 값 변경 전까지 원본 유지</div>`;
+ const invalidInteger=p.name!=='SoundLanguageSetting'&&!BOOLEAN_PARAMS.has(p.name)&&parseBackupInteger(shown(p))===null;
+ let valueHint=invalidInteger?`<div class="hint" data-raw-hint>원본 정수 복원 형식·32비트 범위 확인 필요: ${esc(state.backupRaw.get(p.name)??JSON.stringify(shown(p)))} · 이전 기기 값을 알 수 없어 증감하지 않습니다. 직접 입력하면 수정할 수 있습니다.</div>`:raw===value?'':`<div class="hint" data-raw-hint>백업 원본 ${esc(state.backupRaw.get(p.name)??JSON.stringify(shown(p)))} · 화면 표시 ${esc(settingValueLabel(p,controlValue(p)))} · 값 변경 전까지 원본 유지</div>`;
+ if(p.name==='CruiseGapLevels'&&own(state.backup,'LongitudinalPersonalityMax')&&parseBackupInteger(state.backup.LongitudinalPersonalityMax)===null)valueHint+=`<div class="hint" data-capability>차량 최대 갭 원본 값 ${esc(state.backupRaw.get('LongitudinalPersonalityMax')??JSON.stringify(state.backup.LongitudinalPersonalityMax))}을 원본 정수로 복원할 수 없어 실제 지원 개수는 확인되지 않았습니다. 3개 메뉴 미리보기이며 원본 값은 유지합니다.</div>`;
  const origin=(state.dirty.has(p.name)?'이 데모에서 편집한 값':state.imported?'백업에 포함된 값 · 원본 형식 유지':'새 데모 값')+(p.name==='DriverMonitoringEnabled'?' · 이 키는 원본 파일 복원에서 제외됩니다.':'');
  return `<article class="setting" data-param="${attr(p.name)}"><div class="setting-top${p.control==='segmented'&&p.options?' setting-top--choices':''}"><div class="setting-copy"><div class="setting-title" title="${attr(p.title)}">${esc(p.title)} ${risk}</div><div class="setting-key">${esc(p.name)}</div></div><div class="control">${settingControl(p)}</div></div><div class="setting-meta">${esc(settingRangeLabel(p))}</div><p class="setting-descr">${esc(p.descr||'')}</p><div class="setting-actions"><span class="offline-popular">내 차종 인기값: 오프라인</span>${multiplier}<button class="small-btn" type="button" data-default="${attr(p.name)}">기본값</button></div>${valueHint}${state.stage!=='detail'&&PARAMS.some(child=>child.detail_parent===p.name)?`<button class="small-btn" type="button" data-action="detail:${attr(p.name)}">상세 설정</button>`:''}${own(state.backup,p.name)?`<div class="hint" data-value-origin>${origin}</div>`:'<div class="hint" data-missing>백업에 없는 항목: 기본값 미리보기 · 적용 전까지 백업에 추가하지 않음</div>'}</article>`;
 }
@@ -291,8 +314,8 @@ function sameSettingValue(p,value){
  const raw=state.backup[p.name];
  if(p.name==='SoundLanguageSetting')return raw===value;
  if(p.min===0&&p.max===1){const current=booleanBackupValue(p);return current!==null&&current===value;}
- const current=booleanBackupValue(p)??(typeof raw==='boolean'?Number(raw):raw);
- return (typeof current==='number'||typeof current==='string'&&/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(current.trim()))&&Number.isFinite(Number(current))&&Number(current)===value;
+ const current=parseBackupInteger(raw);
+ return current!==null&&current===value;
 }
 function sameControlValue(p,value){const current=displayValue(controlValue(p));return p.name==='SoundLanguageSetting'?current===value:current.trim()!==''&&Number(current)===value;}
 function setParam(name,value,stepButton=null){
@@ -511,20 +534,20 @@ function handleAction(action){if(action.startsWith('detail:'))openDetail(action.
 function stepSetting(button){
  const p=effectiveParam(BY_NAME.get(button.dataset.step));
  if(!visibleParam(p))return;
+ if(!BOOLEAN_PARAMS.has(p.name)&&parseBackupInteger(shown(p))===null){toast('원본에서 복원할 수 없는 정수 값입니다. 값을 직접 입력해 수정하세요.',true);return;}
  const current=Number(displayValue(controlValue(p)));
- const from=Number.isFinite(current)?current:p.default;
- const next=normalizeSettingNumericValue(from+Number(button.dataset.delta),p,current);
+ const next=normalizeSettingNumericValue(current+Number(button.dataset.delta),p,current);
  setParam(p.name,next,button);
 }
 let stepPress=null,suppressedStepClick=null;
-function finishStepPress(commit=false){
+function finishStepPress(commit=false,event=null){
  if(!stepPress)return;
- const {button,id,held,timer}=stepPress;
+ const {button,id,pointerType,x,y,held,timer}=stepPress;
  stepPress=null;
  clearTimeout(timer);
  button.classList.remove('is-pressed');
  try{if(button.hasPointerCapture?.(id))button.releasePointerCapture(id);}catch{}
- suppressedStepClick={button,datasetId:state.datasetId,until:Date.now()+700};
+ suppressedStepClick={button,id,pointerType,x:event?.clientX??x,y:event?.clientY??y,datasetId:state.datasetId,until:Date.now()+700};
  if(commit&&!held&&button.isConnected!==false)stepSetting(button);
 }
 function repeatStep(){
@@ -535,10 +558,12 @@ function repeatStep(){
  stepPress.timer=setTimeout(repeatStep,160);
 }
 document.addEventListener('pointerdown',event=>{
- const button=event.target.closest('button[data-step]');
- if(!button?.dataset.step||event.button!==0||event.isPrimary===false)return;
+ if(event.button!==0||event.isPrimary===false)return;
  finishStepPress();
- stepPress={button,id:event.pointerId,x:event.clientX,y:event.clientY,held:false,timer:setTimeout(repeatStep,900)};
+ suppressedStepClick=null;
+ const button=event.target.closest('button[data-step]');
+ if(!button?.dataset.step)return;
+ stepPress={button,id:event.pointerId,pointerType:event.pointerType,x:event.clientX,y:event.clientY,held:false,timer:setTimeout(repeatStep,900)};
  button.classList.add('is-pressed');
  try{button.setPointerCapture?.(event.pointerId);}catch{}
 });
@@ -546,12 +571,20 @@ document.addEventListener('pointermove',event=>{
  if(!stepPress||stepPress.id!==event.pointerId)return;
  if(Math.abs(event.clientX-stepPress.x)>10||Math.abs(event.clientY-stepPress.y)>10)finishStepPress();
 });
-document.addEventListener('pointerup',event=>{if(stepPress&&stepPress.id===event.pointerId)finishStepPress(true);});
+document.addEventListener('pointerup',event=>{if(stepPress&&stepPress.id===event.pointerId)finishStepPress(true,event);});
 for(const type of ['pointercancel','lostpointercapture'])document.addEventListener(type,event=>{
  if(stepPress&&stepPress.id===event.pointerId)finishStepPress();
 });
 document.addEventListener('click',event=>{
  const button=event.target.closest('button');
+ if(event.detail!==0&&suppressedStepClick){
+  const pending=suppressedStepClick;
+  const samePointer=typeof event.pointerId==='number'&&event.pointerId===pending.id;
+  const samePosition=Number.isFinite(event.clientX)&&Number.isFinite(event.clientY)&&Math.abs(event.clientX-pending.x)<2&&Math.abs(event.clientY-pending.y)<2;
+  if(samePointer||samePosition&&Date.now()<pending.until||pending.button===button&&(pending.datasetId!==state.datasetId||Date.now()<pending.until)){
+   suppressedStepClick=null;event.preventDefault();event.stopPropagation();return;
+  }
+ }
  if(!button||button.isConnected===false)return;
  const data=button.dataset;
  if(data.choiceValue!==undefined&&state.choice?.select){
@@ -566,11 +599,10 @@ document.addEventListener('click',event=>{
  }else if(data.set)setParam(data.set,data.value);
  else if(data.default)resetSetting(data.default);
  else if(data.step){
-  if(event.detail!==0&&suppressedStepClick?.button===button&&(suppressedStepClick.datasetId!==state.datasetId||Date.now()<suppressedStepClick.until)){suppressedStepClick=null;return;}
   stepSetting(button);
  }else if(data.mult)cycleStep(data.mult);
  else if(data.choice||data.edit)openChoice(data.choice||data.edit);
-});
+},true);
 document.addEventListener('input',event=>{if(event.target.id==='searchInput')updateSearch(event.target.value);});
 $('backBtn').addEventListener('click',back);$('fab').addEventListener('click',()=>{state.fab=!state.fab;$('fabActions').hidden=!state.fab;$('fab').setAttribute('aria-expanded',String(state.fab));});$('modalCancel').addEventListener('click',back);$('carModal').addEventListener('click',e=>{if(e.target.id==='carModal')dismissCarPicker();});$('confirmCancel').addEventListener('click',back);$('confirmYes').addEventListener('click',commitCar);$('fileInput').addEventListener('change',async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{await importBackup(file);}catch(error){toast(`불러오기 실패: ${error.message}`,true);}});
 $('choiceCancel').addEventListener('click',closeChoice);$('choiceApply').addEventListener('click',applyChoice);$('choiceOverlay').addEventListener('click',e=>{if(e.target.id==='choiceOverlay')closeChoice();});$('updateOverlay').addEventListener('click',e=>{if(e.target.id==='updateOverlay')closeUpdateDialog();});document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('updateOverlay').hidden)closeUpdateDialog();else if(state.choice||state.modal)back();}else if(e.key==='Enter'&&e.target.id==='choiceNumber'&&!e.isComposing)applyChoice();});window.addEventListener('beforeunload',event=>{if(state.loadingFile||!state.draftSaved){event.preventDefault();event.returnValue='';}});

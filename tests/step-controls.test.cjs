@@ -13,6 +13,30 @@ const OFFICIAL_SHA = '0df83618f196357165a29218c9a588b0131c7d20';
 const EXPECTED_STEPS = [1, 2, 5, 10, 50, 100];
 const SETTING_CONTROL_KINDS = ["toggle", "segmented", "select", "slider"];
 const WEEKLY_TOGGLES = ['ManualTurnIndicator', 'TeslaCanTrafficStop', 'TeslaManualLaneSignals', 'TeslaModelDesireSignals', 'TeslaModelPathSignals'];
+// Source classification: pinned common/params_keys.h intersected with the 212-key settings schema.
+const NATIVE_INT_KEYS = `AChangeCostStarting AdjustLaneOffset AlwaysLateral ApplyModelSpeed AutoBlinkerControl AutoCruiseControl AutoCurveSpeedFactor AutoCurveSpeedLowerLimit AutoEngage AutoGasCancelSpeed AutoGasSyncSpeed AutoGasTokSpeed AutoNaviCountDownMode AutoNaviRearCameraHoldDistance AutoNaviSpeedBumpEndDistance AutoNaviSpeedBumpSpeed AutoNaviSpeedBumpTime AutoNaviSpeedCtrlEnd AutoNaviSpeedCtrlMode AutoNaviSpeedDecelRate AutoNaviSpeedSafetyFactor AutoRoadSpeedAdjust AutoRoadSpeedLimitOffset AutoSpeedUptoRoadSpeedLimit AutoTurnControl AutoTurnControlRightLaneChange AutoTurnControlSpeedTurn AutoTurnControlTurnEnd AutoTurnMapChange BlinkerLatchedTurn CameraYawTrimDeg CancelButtonMode CanfdBlinkerTest CanfdDebug CanfdHDA2 CarrotCruiseAtcDecel CarrotCruiseDecel CarrotTireTrajectory CenterToFrontRatio ClusterHud ClusterHudBrightness ClusterHudCameraViewMode ClusterHudDebug ClusterHudEncoder ClusterHudMirror ClusterHudOrientation ClusterHudPanelLayout ClusterHudRadarDisplay ClusterHudRadarInfo ClusterHudRadarSourceColor ClusterHudScreenMode ClusterHudTheme ClusterNaviMapFps ClusterNaviMapTheme ClusterNaviMapType CommaPedalEnabled CruiseButtonLongDelay CruiseButtonMode CruiseButtonTest1 CruiseButtonTest2 CruiseButtonTest3 CruiseCoastingPercent CruiseEcoControl CruiseGapLevels CruiseMaxVals0 CruiseMaxVals1 CruiseMaxVals2 CruiseMaxVals3 CruiseMaxVals4 CruiseMaxVals5 CruiseMaxVals6 CruiseOnDist CruiseSpeed1 CruiseSpeed2 CruiseSpeed3 CruiseSpeed4 CruiseSpeed5 CruiseSpeedUnit CruiseSpeedUnitBasic CustomSR CustomSteerDeltaDown CustomSteerDeltaDownLC CustomSteerDeltaUp CustomSteerDeltaUpLC CustomSteerMax DisableMinSteerSpeed DriverMonitoringMode DynamicTFollowLC EnableCornerRadar EnableRadarTracks HDPuse HapticFeedbackWhenSpeedCamera HardwareC3xLite HotspotOnBoot HyundaiCameraSCC IsLdwsCar LaneChangeBsd LaneChangeDelay LaneChangeNeedTorque LaneLineCheck LatMpcAccelCost LatMpcInputOffset LatMpcJerkCost LatMpcMotionCost LatMpcPathCost LatMpcSteeringRateCost LatSmoothSec LatSuspendAngleDeg LateralTorqueAccelFactor LateralTorqueCustom LateralTorqueFriction LateralTorqueKd LateralTorqueKf LateralTorqueKiV LateralTorqueKpV LeadAccelResponse LeadAccelResponseTF1 LeadAccelResponseTF2 LeadAccelResponseTF3 LeadAccelResponseTF4 LfaButtonMode LongActuatorDelay LongTuningKf LongTuningKiV LongTuningKpV MapTurnSpeedFactor MapboxStyle MaxAngleFrames MaxTimeOffroadMin MuteDoor MuteSeatbelt MyDrivingMode MyDrivingModeAuto NNFF OnnxBsdEnabled OnnxBsdIntervalMs OnnxBsdSmoothingMs OnnxBsdThreshold OnnxLaneIntervalMs OnnxLaneThreshold PaddleMode PathOffset RecordRoadCam ShareData ShowCameraWithCluster ShowCustomBrightness ShowDateTime ShowDebugUI ShowDeviceState ShowLaneInfo ShowModelView ShowPathColor ShowPathColorCruiseOff ShowPathColorLane ShowPathMode ShowPathModeLane ShowPlotMode ShowRadarInfo ShowTpms SignalAssistMode SoftwareMenu SoundVolumeAdjust SoundVolumeAdjustEngage SpeedFromPCM SpeedTFFactor SteerActuatorDelay SteerRatioRate StopDistanceCarrot StoppingAccel TFollowDecelBoost TFollowGap1 TFollowGap2 TFollowGap3 TFollowGap4 TrafficLightDetectMode TrafficStopDistanceAdjust TurnSpeedControlMode UseLaneLineCurveSpeed UseLaneLineSpeed VEgoStopping VehicleNaviCanControl VehicleSpeedCameraControlMode VehicleSpeedCameraDistanceTime`.split(' ');
+// Frozen outputs from actual params.py restore_param_values_from_backup/get_param_values at OFFICIAL_SHA.
+// The native boundary enforces signed int32; UI direct-entry Math.round is a different stage.
+const INT_RESTORE_CASES = [
+  ['2.5', 2], ['3.5', 4], ['-2.5', -2], ['-3.5', -4], [2.5, 2], [3.5, 4], [-2.5, -2], [-3.5, -4],
+  ['+2.5', 2], ['2.5e0', 2], ['1e1', 10], [true, 1], [false, 0], [2147483647, 2147483647],
+  [-2147483648, -2147483648], ['2147483647', 2147483647], ['-2147483648', -2147483648],
+  [2147483648, null], [-2147483649, null], ['2147483647.4', 2147483647], ['2147483647.5', null],
+  ['-2147483648.5', -2147483648], ['-2147483648.6', null], [null, null], [{}, null], [[4], null],
+  ['', null], [' ', null], ['0x4', null], ['NaN', null], ['1e999', null], ['1_0', 10], ['1_0.5', 10],
+  ['4__0', null], ['4_.0', null], ['4._0', null], ['4e_0', null], ['٤.٥', 4], ['４.５', 4],
+  ['𝟜.𝟝', 4], ['٤e٠', 4], ['\u00854\u0085', 4], ['\u001c4\u001c', null],
+];
+// Official pyproject.toml pins Python >=3.12.3,<3.13: its Unicode 15 decimal blocks, not the browser's version.
+const SOURCE_UNICODE15_ZEROES = [
+  0x30, 0x660, 0x6f0, 0x7c0, 0x966, 0x9e6, 0xa66, 0xae6, 0xb66, 0xbe6, 0xc66, 0xce6, 0xd66, 0xde6,
+  0xe50, 0xed0, 0xf20, 0x1040, 0x1090, 0x17e0, 0x1810, 0x1946, 0x19d0, 0x1a80, 0x1a90, 0x1b50,
+  0x1bb0, 0x1c40, 0x1c50, 0xa620, 0xa8d0, 0xa900, 0xa9d0, 0xa9f0, 0xaa50, 0xabf0, 0xff10,
+  0x104a0, 0x10d30, 0x11066, 0x110f0, 0x11136, 0x111d0, 0x112f0, 0x11450, 0x114d0, 0x11650,
+  0x116c0, 0x11730, 0x118e0, 0x11950, 0x11c50, 0x11d50, 0x11da0, 0x11f50, 0x16a60, 0x16ac0,
+  0x16b50, 0x1d7ce, 0x1d7d8, 0x1d7e2, 0x1d7ec, 0x1d7f6, 0x1e140, 0x1e2f0, 0x1e4f0, 0x1e950, 0x1fbf0,
+];
+const POST_SOURCE_UNICODE_ZEROES = [0x10d40, 0x116d0, 0x11bf0, 0x11de0, 0x16130, 0x16d70, 0x1ccf0, 0x1e5f1];
 
 function getSettingControlConfig(p) {
   // A parameter pins its control with a "control" field in
@@ -508,18 +532,24 @@ test('ATC distance is a 0–500 numeric row and x1 preserves the official stored
   assert.equal(demo.run('state.backup.AutoTurnControlRightLaneChange'), '500');
 });
 
-test('Numeric steps remain available with imported fractional, out-of-range and non-numeric values', async () => {
+test('Numeric steps start at typed restore values; invalid restores retain raw data for explicit repair', async () => {
   const demo = loadDemo(), p = demo.param('VEgoStopping');
   for (const [raw, up, down] of [
-    [51.625, 53, 51], ['50.625', 52, 50], [9, 10, 10], ['101', 100, 100],
-    ['legacy', 51, 49], [null, 51, 49], [{ unsupported: true }, 51, 49],
+    [51.625, 53, 51], ['50.625', 52, 50], ['50.5', 51, 49], [9, 10, 10], ['101', 100, 100],
+    ['legacy', null, null], [null, null, null], [{ unsupported: true }, null, null],
   ]) {
     const fixture = { [p.name]: raw, FutureUnknown: { exact: 0.123456789012345, list: [false, null] } };
     for (const [sign, expected] of [[1, up], [-1, down]]) {
       await demo.importJson(fixture);
       assert.deepEqual(await demo.exported(), fixture, 'rendering retains the original JSON value');
       demo.press(p, sign);
-      assert.deepEqual(await demo.exported(), { ...fixture, [p.name]: String(expected) }, JSON.stringify(raw));
+      if (expected === null) {
+        // Source restore rejects the value; offline mode cannot infer the device's prior value.
+        assert.deepEqual(await demo.exported(), fixture, 'invalid restore never silently steps from a default');
+        assert.match(demo.card(p), /해석|변환|복원|형식|유효/);
+        demo.direct(p, 55);
+        assert.deepEqual(await demo.exported(), { ...fixture, [p.name]: '55' });
+      } else assert.deepEqual(await demo.exported(), { ...fixture, [p.name]: String(expected) }, JSON.stringify(raw));
     }
   }
 });
@@ -1099,4 +1129,178 @@ test('Draft metadata corruption is blocked and cleanup failures never destroy re
   const removeFailure = loadDemo({ session, sessionFailure: { remove: true }, hosted: true, startup: true });
   assert.match(backupStatus(removeFailure), /정리|실패|못/);
   assert.match(await removeFailure.exportedText(), /9007199254740993/);
+});
+
+test('All 183 native INT controls display the actual restored readback without normalizing untouched exports', async () => {
+  const demo = loadDemo();
+  assert.equal(NATIVE_INT_KEYS.length, 183);
+  assert.equal(new Set(NATIVE_INT_KEYS).size, 183);
+  assert.equal(INT_RESTORE_CASES.length, 43);
+  for (const [raw, restored] of INT_RESTORE_CASES.filter(([, value]) => value !== null)) {
+    const fixture = { ...Object.fromEntries(NATIVE_INT_KEYS.map(name => [name, raw])), FutureUnknown: ['001', null] };
+    await demo.importJson(fixture);
+    for (const name of NATIVE_INT_KEYS) {
+      assert.ok(demo.param(name), name + ': present in the pinned official schema');
+      const expected = name === 'CruiseGapLevels' ? (restored > 0 ? Math.min(3, Math.max(2, restored)) : 3) : restored;
+      assert.equal(demo.run(`controlValue(effectiveParam(BY_NAME.get(${JSON.stringify(name)})))`), expected, name + ': ' + JSON.stringify(raw));
+    }
+    assert.deepEqual(await demo.exported(), fixture, 'display never rewrites imported native INT tokens');
+    assert.equal(demo.run('state.dirty.size'), 0);
+  }
+});
+
+test('Rejected native INT values remain intact with a warning and cannot step from an invented prior value', async () => {
+  const demo = loadDemo();
+  for (const [raw] of INT_RESTORE_CASES.filter(([, value]) => value === null)) {
+    const fixture = { ...Object.fromEntries(NATIVE_INT_KEYS.map(name => [name, raw])), FutureUnknown: true };
+    await demo.importJson(fixture);
+    for (const name of NATIVE_INT_KEYS) {
+      assert.match(demo.card(demo.param(name)), /data-raw-hint[^>]*>[^<]*(?:원본|복원|형식)/, name + ': ' + JSON.stringify(raw));
+    }
+    for (const p of demo.numeric) demo.press(p, 1);
+    assert.deepEqual(await demo.exported(), fixture, 'invalid/overflow input never silently turns into a default plus one');
+    assert.equal(demo.run('state.dirty.size'), 0);
+  }
+});
+
+test('All numeric production clicks step after native typed restore, including ties and JSON booleans', async () => {
+  const demo = loadDemo();
+  for (const p of demo.numeric) {
+    assert.ok(NATIVE_INT_KEYS.includes(p.name), p.name + ': native INT source classification');
+    for (const [raw, restored] of [['2.5', 2], ['3.5', 4], ['-2.5', -2], [true, 1], [false, 0], ['1e1', 10]]) {
+      for (const sign of [-1, 1]) {
+        const fixture = { [p.name]: raw, FutureUnknown: { untouched: true } };
+        await demo.importJson(fixture);
+        const expected = normalizeSettingNumericValue(restored + sign, p, restored);
+        demo.press(p, sign);
+        // A clamped no-op keeps the untouched source token/type, as the preservation contract requires.
+        const after = expected === restored ? fixture : { ...fixture, [p.name]: String(expected) };
+        assert.deepEqual(await demo.exported(), after, p.name + ': ' + JSON.stringify(raw) + ' / ' + sign);
+      }
+    }
+  }
+  const p = demo.param('AutoGasTokSpeed');
+  for (const [raw, expected] of [['2.5', '3'], [true, '2']]) {
+    await demo.importJson({ [p.name]: raw });
+    demo.press(p, 1);
+    assert.deepEqual(await demo.exported(), { [p.name]: expected });
+  }
+  demo.direct(p, '2.5');
+  assert.equal((await demo.exported())[p.name], '3', 'explicit UI numeric entry continues to use Math.round');
+});
+
+test('Vehicle gap capability uses restored native INT readback rather than the raw token spelling', async () => {
+  const demo = loadDemo(), p = demo.param('CruiseGapLevels');
+  for (const [raw, max] of [['4.0', 4], ['4e0', 4], ['4.5', 4], ['3.5', 4], ['+04', 4],
+    ['٤.٥', 4], ['４.５', 4], [4.5, 4], [true, 3], [false, 3], ['4.6', 3], ['4x', 3], [null, 3], [{}, 3], ['2147483648', 3]]) {
+    const fixture = { LongitudinalPersonalityMax: raw, CruiseGapLevels: '4', FutureUnknown: null };
+    await demo.importJson(fixture);
+    const capabilityHint = demo.card(p).match(/<div[^>]*data-capability[^>]*>([\s\S]*?)<\/div>/)?.[1];
+    if (raw === '4x' || raw === null || typeof raw === 'object' || raw === '2147483648') {
+      assert.ok(capabilityHint, JSON.stringify(raw) + ': invalid capability is explicitly marked');
+      assert.match(capabilityHint, /실제 지원 개수는 확인되지/);
+      assert.match(capabilityHint, /3개 메뉴 미리보기/);
+      assert.match(capabilityHint, /원본 값은 유지/);
+    } else assert.equal(capabilityHint, undefined, 'valid native integer capability has no invalid-input warning');
+    demo.click({ choice: p.name });
+    const values = [...demo.element('choiceBody').innerHTML.matchAll(/data-choice-value="([^"]+)"/g)].map(match => Number(match[1]));
+    assert.deepEqual(values, max === 4 ? [2, 3, 4] : [2, 3], JSON.stringify(raw));
+    assert.deepEqual(await demo.exported(), fixture);
+    demo.dispatch('click', demo.element('choiceCancel'), {}, 'choiceCancel');
+  }
+  await demo.importJson({ FutureUnknown: true });
+  demo.click({ choice: p.name });
+  assert.deepEqual([...demo.element('choiceBody').innerHTML.matchAll(/data-choice-value="([^"]+)"/g)].map(match => Number(match[1])), [2, 3]);
+  assert.doesNotMatch(demo.card(p), /data-capability/, 'absent capability retains the ordinary three-level default');
+  assert.deepEqual(await demo.exported(), { FutureUnknown: true });
+});
+
+test('Language labels and choice selection trim and match case without normalizing imported JSON', async () => {
+  const demo = loadDemo(), p = demo.param('SoundLanguageSetting');
+  // Pinned setting.js getSoundLanguageSettingOptionLabel and case-insensitive option matching.
+  for (const [raw, code, label] of [[' KO ', 'ko', '한국어'], ['EN', 'en', 'English'], [' zh-chs ', 'zh-CHS', '中文'],
+    [' AuTo ', 'auto', '자동'], ['', 'auto', '자동'], ['   ', 'auto', '자동'], [' future-lang ', null, 'future-lang']]) {
+    const fixture = { SoundLanguageSetting: raw, FutureUnknown: null };
+    await demo.importJson(fixture);
+    assert.ok(demo.control(p).includes(`>${label}</button>`), JSON.stringify(raw));
+    demo.click({ choice: p.name });
+    const active = [...demo.element('choiceBody').innerHTML.matchAll(/class="active" data-choice-value="([^"]+)"/g)].map(match => match[1]);
+    assert.deepEqual(active, code ? [code] : [], JSON.stringify(raw));
+    demo.dispatch('click', demo.element('choiceCancel'), {}, 'choiceCancel');
+    assert.deepEqual(await demo.exported(), fixture, 'display and cancel keep the exact source token');
+    demo.click({ choice: p.name });
+    demo.click({ choiceValue: 'en' });
+    assert.deepEqual(await demo.exported(), { ...fixture, SoundLanguageSetting: 'en' }, 'explicit option selection uses the canonical source code');
+  }
+});
+
+test('A captured step release consumes a retargeted native click but permits the next tap and keyboard activation', async () => {
+  for (const pointerType of ['mouse', 'touch']) {
+    const demo = loadDemo(), p = demo.param('CenterToFrontRatio');
+    await demo.importJson({ [p.name]: '31', FutureUnknown: true });
+    const minus = demo.button({ step: p.name, delta: '-1' }), edit = demo.button({ edit: p.name });
+    const pointer = { pointerId: 73, pointerType, button: 0, isPrimary: true, clientX: 120, clientY: 200 };
+    demo.dispatch('pointerdown', minus, pointer);
+    demo.dispatch('pointerup', minus, pointer);
+    assert.equal(demo.run(`state.backup.${p.name}`), '0');
+    // At the observed 768px layout, 31 -> 0 reflows the value button under the release point.
+    demo.dispatch('click', edit, { ...pointer, detail: 1 });
+    assert.equal(demo.run('state.choice'), null, 'the original physical press cannot also open the editor');
+    assert.equal(demo.element('choiceOverlay').hidden, true);
+    demo.dispatch('pointerdown', edit, { ...pointer, pointerId: 74 });
+    demo.dispatch('pointerup', edit, { ...pointer, pointerId: 74 });
+    demo.dispatch('click', edit, { ...pointer, pointerId: 74, detail: 1 });
+    assert.equal(demo.run('state.choice.name'), p.name, 'a fresh physical tap opens the editor');
+    demo.dispatch('click', demo.element('choiceCancel'), {}, 'choiceCancel');
+    demo.dispatch('pointerdown', minus, { ...pointer, pointerId: 75 });
+    demo.dispatch('pointerup', minus, { ...pointer, pointerId: 75 });
+    demo.dispatch('click', edit, { detail: 0 });
+    assert.equal(demo.run('state.choice.name'), p.name, 'keyboard activation remains available during echo suppression');
+  }
+});
+
+test('Source Python Unicode 15 keeps all 68 decimal blocks valid without normalizing their raw JSON', async () => {
+  const demo = loadDemo(), p = demo.param('AutoGasTokSpeed'), gap = demo.param('CruiseGapLevels');
+  assert.equal(SOURCE_UNICODE15_ZEROES.length, 68);
+  for (const zero of SOURCE_UNICODE15_ZEROES) {
+    for (let digit = 0; digit <= 9; digit++) {
+      const raw = String.fromCodePoint(zero + digit);
+      assert.equal(demo.run(`parseBackupInteger(${JSON.stringify(raw)})`), digit, 'source decimal U+' + (zero + digit).toString(16));
+    }
+    const raw = String.fromCodePoint(zero + 4) + '.' + String.fromCodePoint(zero + 5);
+    const fixture = { AutoGasTokSpeed: raw, LongitudinalPersonalityMax: raw, CruiseGapLevels: '4', Unknown: true };
+    await demo.importJson(fixture);
+    assert.equal(demo.run('controlValue(BY_NAME.get("AutoGasTokSpeed"))'), 4);
+    assert.doesNotMatch(demo.card(gap), /data-capability/);
+    demo.click({ choice: gap.name });
+    assert.deepEqual([...demo.element('choiceBody').innerHTML.matchAll(/data-choice-value="([^"]+)"/g)].map(match => Number(match[1])), [2, 3, 4]);
+    demo.dispatch('click', demo.element('choiceCancel'), {}, 'choiceCancel');
+    assert.deepEqual(await demo.exported(), fixture);
+    demo.press(p, 1);
+    assert.deepEqual(await demo.exported(), { ...fixture, AutoGasTokSpeed: '5' });
+  }
+});
+
+test('Future Unicode decimal blocks rejected by the source cannot enable a fourth gap or fabricate a step value', async () => {
+  const demo = loadDemo(), p = demo.param('AutoGasTokSpeed'), gap = demo.param('CruiseGapLevels');
+  assert.equal(POST_SOURCE_UNICODE_ZEROES.length, 8);
+  for (const zero of POST_SOURCE_UNICODE_ZEROES) {
+    for (let digit = 0; digit <= 9; digit++) {
+      const raw = String.fromCodePoint(zero + digit);
+      assert.equal(demo.run(`parseBackupInteger(${JSON.stringify(raw)})`), null, 'source rejects U+' + (zero + digit).toString(16));
+    }
+    const raw = String.fromCodePoint(zero + 4);
+    const fixture = { AutoGasTokSpeed: raw, LongitudinalPersonalityMax: raw, CruiseGapLevels: '4', Unknown: null };
+    await demo.importJson(fixture);
+    const before = await demo.exportedText();
+    assert.match(demo.card(p), /data-raw-hint/);
+    assert.match(demo.card(gap), /data-capability[^>]*>[^<]*실제 지원 개수는 확인되지/);
+    demo.click({ choice: gap.name });
+    assert.deepEqual([...demo.element('choiceBody').innerHTML.matchAll(/data-choice-value="([^"]+)"/g)].map(match => Number(match[1])), [2, 3]);
+    demo.dispatch('click', demo.element('choiceCancel'), {}, 'choiceCancel');
+    demo.press(p, 1);
+    demo.press(p, -1);
+    assert.equal(await demo.exportedText(), before, 'invalid source characters remain exact until an explicit valid edit');
+    assert.equal(demo.run('state.dirty.size'), 0);
+  }
 });
