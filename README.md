@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.20 | WebCarrot Offline Settings Demo v1.0.20
+# WebCarrot 오프라인 설정 데모 v1.0.21 | WebCarrot Offline Settings Demo v1.0.21
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -27,12 +27,14 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 - 내장 차량 목록은 원본의 차량 정의를 바탕으로 합니다. 기기별 추가 차량은 목록에 없을 수 있습니다. 기존 백업에 있는 그런 값도 그대로 보존됩니다.
 - 콤마 서버에서 받는 실제 차종별 인기값은 데모가 알 수 없어 표시하지 않습니다. 오프라인 안내로 구분합니다.
 - 차량 선택 목록에서 확인된 현대·기아·제네시스 및 토요타·렉서스에는 공식 브랜드 조건을 적용합니다. 콤마는 실제 차량 식별 결과를 사용하고, 데모는 선택 차량과 백업에서 확인할 수 있는 정보로 설정을 표시합니다. 갭 단계는 백업의 `LongitudinalPersonalityMax`에 따라 최대 3 또는 4로 표시합니다. 숨겨지거나 표시 범위를 벗어난 가져온 값도 편집 전에는 보존합니다.
+- 레이 EV의 페달 제어 상태에 따라 표시되는 롱컨 튜닝 항목 3개는 콤마에서 실제 차량 능력을 확인해야 열립니다. 데모는 해당 정보가 없을 때의 원본 브랜드 필터를 적용합니다.
 - ONNX 차선·BSD의 세부값 6개는 원본 `detail_parent` 관계에 따라 **상세 설정**에서 열며, 일반 목록과 설정 개수에는 포함하지 않습니다.
 
 **복원 호환성:** 콤마의 일반 파일 복원은 지원하지 않는 키와 `DriverMonitoringEnabled` 등 제외 항목을 건너뜁니다. `"True"`·`"False"`는 BOOL 키에 쓸 수 있지만 INT 키에서는 실패할 수 있습니다. 데모는 가져온 값을 자동으로 바꾸지 않습니다. 콤마는 일부 값이 실패해도 복원 응답을 반환할 수 있으며, 파일 복원은 설정 화면의 범위 보정과 다릅니다. 새 데모의 기본값 묶음은 실제 기기에서 받은 전체 백업과 다릅니다.
 
 ## 업데이트
 
+- **v1.0.21**은 공식 carrot-wip [2760b40](https://github.com/ajouatom/openpilot/commit/2760b406e2187ec82e0f9027b248b57f72d44a9f)의 설정 219개를 반영합니다. Tesla 전용 그룹에 기존 5개 항목과 자동 속도 휠을 배치하고, 정차·출발 롱컨 보정, CANFD 깜빡이 및 CCNC 계기판 설정을 추가했습니다. 기존 항목 8개의 표시명 또는 설명도 원본에 맞췄습니다.
 - **v1.0.20**은 공식 carrot-wip [e318f76](https://github.com/ajouatom/openpilot/commit/e318f767ff7dc96d25a3bcc2b46f9f3daf6e9e42) 기준으로 상시 조향의 전체 설명을 갱신했습니다. 저장소 정리 실패 뒤 같은 구버전 백업으로 재업데이트할 때 다른 보관본이 선택되는 문제와, 이전 화면에서 편집한 최신 탭 보관값이 과거 복구 후보에 가려지는 문제를 수정했습니다. 설정 개수·입력 방식·백업 형식은 유지합니다.
 - **v1.0.19**는 v1.0.16의 업데이트 백업이 예전 탭 보관값이나 새 데모 표식에 가려지는 문제를 수정했습니다. 두 보관본이 충돌하면 **구버전 업데이트 백업 사용** 또는 **이전 탭 보관값 유지**를 선택하며, 선택 전 새로고침해도 후보를 유지합니다. 구버전에서 수정한 뒤 업데이트했다면 첫 번째 백업을 선택하세요. 수정하지 않은 값과 미지원 키의 원문은 그대로 보존합니다.
 - **v1.0.18**은 일반 INT의 소수·불리언 입력 증감, `"4.0"`·`"4e0"` 갭 능력값, 대소문자·공백이 있는 언어 표시를 원본에 맞췄습니다. 값 표시 폭이 바뀔 때 한 번의 터치로 입력창까지 열리는 문제도 수정했습니다. 설정 정의와 차량 목록은 그대로입니다.
@@ -51,7 +53,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 데모의 범위
 
-현재 임베디드 원본 정의에는 **파라미터 212개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
+현재 임베디드 원본 정의에는 **파라미터 219개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 공식 복원 코드를 시험용 저장소에서 검증했으며, 실제 콤마 복원과 재시작 후 값 확인은 별도입니다.
 
@@ -94,10 +96,13 @@ On a phone, browser Back closes vehicle and value dialogs first, then walks back
 
 Recognized Hyundai/Kia/Genesis and Toyota/Lexus models follow the official visibility rules. The device uses its live fingerprint; the demo uses the chosen vehicle and available backup information. `LongitudinalPersonalityMax` limits gap levels to 3 or 4. Hidden or out of range backup values stay intact until edited. The six ONNX lane/BSD detail values remain under **상세 설정** (Details), following `detail_parent`.
 
+The device shows three longitudinal tuning settings on the Ray EV after confirming active pedal control from live vehicle data. The demo applies upstream's brand filter for cases without that capability data.
+
 **Restore compatibility:** The device skips unsupported and excluded keys such as `DriverMonitoringEnabled`. The strings `"True"` and `"False"` work for BOOL keys, but can fail for INT keys. The demo preserves imported values. Restore can return a response even when some entries fail, and it does not apply the settings screen's range correction. A new demo's default export is different from a full device backup.
 
 ### Updates
 
+- **v1.0.21** matches the 219 settings in official carrot-wip [2760b40](https://github.com/ajouatom/openpilot/commit/2760b406e2187ec82e0f9027b248b57f72d44a9f). The new Tesla group contains five relocated settings and the automatic speed wheel. The update also adds stop/go longitudinal assist and the CANFD blinker and CCNC cluster settings, and refreshes labels or descriptions for eight existing settings.
 - **v1.0.20** follows official carrot-wip [e318f76](https://github.com/ajouatom/openpilot/commit/e318f767ff7dc96d25a3bcc2b46f9f3daf6e9e42), including the full revised Always Lateral descriptions. It fixes repeated identical legacy updates after snapshot-cleanup failure selecting the wrong backup, and older recovery snapshots hiding a newer draft saved by a resumed document. Setting counts, input controls and the backup payload format are unchanged.
 - **v1.0.19** repairs v1.0.16 update backups being hidden by an older tab draft or a new-demo marker. Conflicting backups require an explicit choice: **구버전 업데이트 백업 사용** (use the legacy update backup) or **이전 탭 보관값 유지** (keep the existing tab backup). Candidates survive reloads before selection. Choose the first option after editing in the older version and updating. Untouched values and unknown keys keep their original JSON tokens.
 - **v1.0.18** aligns fractional/boolean INT edits, `"4.0"`/`"4e0"` gap capability and case/whitespace-insensitive language labels with upstream. A touch no longer opens the value editor after a step changes the label width. The settings schema and vehicle catalog are unchanged.
@@ -116,7 +121,7 @@ Recognized Hyundai/Kia/Genesis and Toyota/Lexus models follow the official visib
 
 ### Scope
 
-The embedded upstream definitions currently include **212 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
+The embedded upstream definitions currently include **219 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
 The demo does not automatically track changes in upstream carrot-wip. Restore compatibility was checked with the official code and a test parameter store; a physical Comma restore and post-restart readback are separate checks.
 

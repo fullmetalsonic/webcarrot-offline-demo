@@ -7,15 +7,17 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 // Frozen oracles from openpilot/selfdrive/carrot at this official commit.
-const OFFICIAL_SHA = 'e318f767ff7dc96d25a3bcc2b46f9f3daf6e9e42';
+const OFFICIAL_SHA = '2760b406e2187ec82e0f9027b248b57f72d44a9f';
+const OFFICIAL_PARAM_COUNT = 219;
 // web/js/pages/setting.js:781 and web/src/ui/components/numeric_stepper/numeric_stepper.js:18.
 // Official config.py UNIT_CYCLE; this is the actual increment, not p.unit times it.
 const EXPECTED_STEPS = [1, 2, 5, 10, 50, 100];
 const SETTING_CONTROL_KINDS = ["toggle", "segmented", "select", "slider"];
-const WEEKLY_TOGGLES = ['ManualTurnIndicator', 'TeslaCanTrafficStop', 'TeslaManualLaneSignals', 'TeslaModelDesireSignals', 'TeslaModelPathSignals'];
-// Source classification: pinned common/params_keys.h intersected with the 212-key settings schema.
-const NATIVE_INT_KEYS = `AChangeCostStarting AdjustLaneOffset AlwaysLateral ApplyModelSpeed AutoBlinkerControl AutoCruiseControl AutoCurveSpeedFactor AutoCurveSpeedLowerLimit AutoEngage AutoGasCancelSpeed AutoGasSyncSpeed AutoGasTokSpeed AutoNaviCountDownMode AutoNaviRearCameraHoldDistance AutoNaviSpeedBumpEndDistance AutoNaviSpeedBumpSpeed AutoNaviSpeedBumpTime AutoNaviSpeedCtrlEnd AutoNaviSpeedCtrlMode AutoNaviSpeedDecelRate AutoNaviSpeedSafetyFactor AutoRoadSpeedAdjust AutoRoadSpeedLimitOffset AutoSpeedUptoRoadSpeedLimit AutoTurnControl AutoTurnControlRightLaneChange AutoTurnControlSpeedTurn AutoTurnControlTurnEnd AutoTurnMapChange BlinkerLatchedTurn CameraYawTrimDeg CancelButtonMode CanfdBlinkerTest CanfdDebug CanfdHDA2 CarrotCruiseAtcDecel CarrotCruiseDecel CarrotTireTrajectory CenterToFrontRatio ClusterHud ClusterHudBrightness ClusterHudCameraViewMode ClusterHudDebug ClusterHudEncoder ClusterHudMirror ClusterHudOrientation ClusterHudPanelLayout ClusterHudRadarDisplay ClusterHudRadarInfo ClusterHudRadarSourceColor ClusterHudScreenMode ClusterHudTheme ClusterNaviMapFps ClusterNaviMapTheme ClusterNaviMapType CommaPedalEnabled CruiseButtonLongDelay CruiseButtonMode CruiseButtonTest1 CruiseButtonTest2 CruiseButtonTest3 CruiseCoastingPercent CruiseEcoControl CruiseGapLevels CruiseMaxVals0 CruiseMaxVals1 CruiseMaxVals2 CruiseMaxVals3 CruiseMaxVals4 CruiseMaxVals5 CruiseMaxVals6 CruiseOnDist CruiseSpeed1 CruiseSpeed2 CruiseSpeed3 CruiseSpeed4 CruiseSpeed5 CruiseSpeedUnit CruiseSpeedUnitBasic CustomSR CustomSteerDeltaDown CustomSteerDeltaDownLC CustomSteerDeltaUp CustomSteerDeltaUpLC CustomSteerMax DisableMinSteerSpeed DriverMonitoringMode DynamicTFollowLC EnableCornerRadar EnableRadarTracks HDPuse HapticFeedbackWhenSpeedCamera HardwareC3xLite HotspotOnBoot HyundaiCameraSCC IsLdwsCar LaneChangeBsd LaneChangeDelay LaneChangeNeedTorque LaneLineCheck LatMpcAccelCost LatMpcInputOffset LatMpcJerkCost LatMpcMotionCost LatMpcPathCost LatMpcSteeringRateCost LatSmoothSec LatSuspendAngleDeg LateralTorqueAccelFactor LateralTorqueCustom LateralTorqueFriction LateralTorqueKd LateralTorqueKf LateralTorqueKiV LateralTorqueKpV LeadAccelResponse LeadAccelResponseTF1 LeadAccelResponseTF2 LeadAccelResponseTF3 LeadAccelResponseTF4 LfaButtonMode LongActuatorDelay LongTuningKf LongTuningKiV LongTuningKpV MapTurnSpeedFactor MapboxStyle MaxAngleFrames MaxTimeOffroadMin MuteDoor MuteSeatbelt MyDrivingMode MyDrivingModeAuto NNFF OnnxBsdEnabled OnnxBsdIntervalMs OnnxBsdSmoothingMs OnnxBsdThreshold OnnxLaneIntervalMs OnnxLaneThreshold PaddleMode PathOffset RecordRoadCam ShareData ShowCameraWithCluster ShowCustomBrightness ShowDateTime ShowDebugUI ShowDeviceState ShowLaneInfo ShowModelView ShowPathColor ShowPathColorCruiseOff ShowPathColorLane ShowPathMode ShowPathModeLane ShowPlotMode ShowRadarInfo ShowTpms SignalAssistMode SoftwareMenu SoundVolumeAdjust SoundVolumeAdjustEngage SpeedFromPCM SpeedTFFactor SteerActuatorDelay SteerRatioRate StopDistanceCarrot StoppingAccel TFollowDecelBoost TFollowGap1 TFollowGap2 TFollowGap3 TFollowGap4 TrafficLightDetectMode TrafficStopDistanceAdjust TurnSpeedControlMode UseLaneLineCurveSpeed UseLaneLineSpeed VEgoStopping VehicleNaviCanControl VehicleSpeedCameraControlMode VehicleSpeedCameraDistanceTime`.split(' ');
-// Frozen outputs from actual params.py restore_param_values_from_backup/get_param_values at OFFICIAL_SHA.
+const TESLA_FEATURES = ['TeslaAutoTurnSignals', 'TeslaCanTrafficStop', 'TeslaManualLaneSignals', 'TeslaModelDesireSignals', 'TeslaModelPathSignals', 'TeslaAutoSpeedLimit'];
+const WEEKLY_TOGGLES = ['ManualTurnIndicator', ...TESLA_FEATURES.slice(1), 'CanfdBlinkerKick'];
+// Source classification: pinned common/params_keys.h intersected with the settings schema.
+const NATIVE_INT_KEYS = `AChangeCostStarting AdjustLaneOffset AlwaysLateral ApplyModelSpeed AutoBlinkerControl AutoCruiseControl AutoCurveSpeedFactor AutoCurveSpeedLowerLimit AutoEngage AutoGasCancelSpeed AutoGasSyncSpeed AutoGasTokSpeed AutoNaviCountDownMode AutoNaviRearCameraHoldDistance AutoNaviSpeedBumpEndDistance AutoNaviSpeedBumpSpeed AutoNaviSpeedBumpTime AutoNaviSpeedCtrlEnd AutoNaviSpeedCtrlMode AutoNaviSpeedDecelRate AutoNaviSpeedSafetyFactor AutoRoadSpeedAdjust AutoRoadSpeedLimitOffset AutoSpeedUptoRoadSpeedLimit AutoTurnControl AutoTurnControlRightLaneChange AutoTurnControlSpeedTurn AutoTurnControlTurnEnd AutoTurnMapChange BlinkerLatchedTurn CameraYawTrimDeg CancelButtonMode CanfdBlinkerKickMode CanfdBlinkerKickModelMode CanfdBlinkerTest CanfdDebug CanfdHDA2 CarrotCruiseAtcDecel CarrotCruiseDecel CarrotTireTrajectory CcncClusterDisplay CcncTrafficBackground CenterToFrontRatio ClusterHud ClusterHudBrightness ClusterHudCameraViewMode ClusterHudDebug ClusterHudEncoder ClusterHudMirror ClusterHudOrientation ClusterHudPanelLayout ClusterHudRadarDisplay ClusterHudRadarInfo ClusterHudRadarSourceColor ClusterHudScreenMode ClusterHudTheme ClusterNaviMapFps ClusterNaviMapTheme ClusterNaviMapType CommaPedalEnabled CruiseButtonLongDelay CruiseButtonMode CruiseButtonTest1 CruiseButtonTest2 CruiseButtonTest3 CruiseCoastingPercent CruiseEcoControl CruiseGapLevels CruiseMaxVals0 CruiseMaxVals1 CruiseMaxVals2 CruiseMaxVals3 CruiseMaxVals4 CruiseMaxVals5 CruiseMaxVals6 CruiseOnDist CruiseSpeed1 CruiseSpeed2 CruiseSpeed3 CruiseSpeed4 CruiseSpeed5 CruiseSpeedUnit CruiseSpeedUnitBasic CustomSR CustomSteerDeltaDown CustomSteerDeltaDownLC CustomSteerDeltaUp CustomSteerDeltaUpLC CustomSteerMax DisableMinSteerSpeed DriverMonitoringMode DynamicTFollowLC EnableCornerRadar EnableRadarTracks HDPuse HapticFeedbackWhenSpeedCamera HardwareC3xLite HotspotOnBoot HyundaiCameraSCC IsLdwsCar LaneChangeBsd LaneChangeDelay LaneChangeNeedTorque LaneLineCheck LatMpcAccelCost LatMpcInputOffset LatMpcJerkCost LatMpcMotionCost LatMpcPathCost LatMpcSteeringRateCost LatSmoothSec LatSuspendAngleDeg LateralTorqueAccelFactor LateralTorqueCustom LateralTorqueFriction LateralTorqueKd LateralTorqueKf LateralTorqueKiV LateralTorqueKpV LeadAccelResponse LeadAccelResponseTF1 LeadAccelResponseTF2 LeadAccelResponseTF3 LeadAccelResponseTF4 LfaButtonMode LongActuatorDelay LongTuningKf LongTuningKiV LongTuningKpV MapTurnSpeedFactor MapboxStyle MaxAngleFrames MaxTimeOffroadMin MuteDoor MuteSeatbelt MyDrivingMode MyDrivingModeAuto NNFF OnnxBsdEnabled OnnxBsdIntervalMs OnnxBsdSmoothingMs OnnxBsdThreshold OnnxLaneIntervalMs OnnxLaneThreshold PaddleMode PathOffset RecordRoadCam ShareData ShowCameraWithCluster ShowCustomBrightness ShowDateTime ShowDebugUI ShowDeviceState ShowLaneInfo ShowModelView ShowPathColor ShowPathColorCruiseOff ShowPathColorLane ShowPathMode ShowPathModeLane ShowPlotMode ShowRadarInfo ShowTpms SignalAssistMode SoftwareMenu SoundVolumeAdjust SoundVolumeAdjustEngage SpeedFromPCM SpeedTFFactor SteerActuatorDelay SteerRatioRate StopDistanceCarrot StopGoLongAssist StoppingAccel TFollowDecelBoost TFollowGap1 TFollowGap2 TFollowGap3 TFollowGap4 TrafficLightDetectMode TrafficStopDistanceAdjust TurnSpeedControlMode UseLaneLineCurveSpeed UseLaneLineSpeed VEgoStopping VehicleNaviCanControl VehicleSpeedCameraControlMode VehicleSpeedCameraDistanceTime`.split(' ');
+// Frozen outputs from the official params.py restore_param_values_from_backup/get_param_values.
 // The native boundary enforces signed int32; UI direct-entry Math.round is a different stage.
 const INT_RESTORE_CASES = [
   ['2.5', 2], ['3.5', 4], ['-2.5', -2], ['-3.5', -4], [2.5, 2], [3.5, 4], [-2.5, -2], [-3.5, -4],
@@ -264,15 +266,15 @@ test('Embedded settings schema and menu match the frozen official source', () =>
   const demo = loadDemo();
   assert.equal(demo.run('SOURCE_SHA'), OFFICIAL_SHA);
   const schemaDigest = createHash('sha256').update(demo.run('JSON.stringify(SCHEMA)')).digest('hex');
-  assert.equal(schemaDigest, '59f2d0cbba161c642441edc44546ad714a563343547646da70d6e1cc56298f70');
-  // Frozen independently from carrot_settings.json Git blob 24b31a01c7304a5a26edbfc492d3b4535affdadc.
+  // Frozen independently from carrot_settings.json Git blob 202534b55f7db7c59eb50030ef70e33fccec3740.
+  assert.equal(schemaDigest, '0330f22e0533fc3b129baad3920587911e0247324925fd7feb90e76164a21459');
   const alwaysLateralDescriptions = {
     descr: '크루즈가 켜져있지 않아도 조향제어를 허용합니다.\n시스템 시작 후 최초 입력 준비 확인 전에는 조향하지 않습니다. 한 번 통과하면 이 검사는 다시 차단하지 않으며 기존 주행 중 안전 처리는 유지됩니다.\nTesla는 실제 정차 시에도 조향할 수 있으며, 저속 이동 중 조향 제한은 유지됩니다.\n차량 CAN 확장이 있는 Tesla는 화면의 세 손가락 접촉마다 이 설정을 즉시 전환합니다. 실험 모드는 바뀌지 않습니다. 끄더라도 활성 크루즈의 조향까지 해제하지는 않습니다.\n지속적인 CAN 제어기 오류 또는 반복되는 캐스퍼 전방 안전 시스템 오류가 확인되면 경고와 함께 상시 조향도 해제되며, 오류가 해소되기 전에는 다시 켤 수 없습니다.\n0: 끄기, 1: 켜기',
     edescr: 'Allow lateral control even when cruise is not active.\nSteering waits for initial input readiness after system startup. Once passed, this check does not block again; existing runtime safety handling remains unchanged.\nTesla can steer at true standstill; minimum steering-speed limits still apply while moving.\nOn Tesla with the vehicle CAN extension, each distinct three-finger screen contact toggles this setting live, not Experimental Mode. OFF does not disengage steering under active cruise.\nConfirmed persistent CAN-controller errors or recurring Casper front-safety-system faults trigger an alert and disable always-on steering too; re-engagement is blocked until the fault clears.\n0: OFF, 1: ON',
     cdescr: '即使巡航未激活，也允许横向控制。\n系统启动后，首次确认所需输入就绪前不执行转向。一旦通过，此启动检查不再阻断；现有行驶中安全处理保持不变。\nTesla 在实际静止时可以转向；低速移动时仍遵守最低转向速度限制。\n有车辆 CAN 扩展的 Tesla，每次独立三指触屏立即切换此设置，不再切换实验模式。关闭不等于解除已激活巡航中的转向控制。\n确认持续的 CAN 控制器错误或反复出现的 Casper 前方安全系统故障时，会发出警报并停止全时转向；故障解除前不能重新启用。\n0: 关闭, 1: 开启',
   };
   for (const [field, text] of Object.entries(alwaysLateralDescriptions)) assert.equal(demo.param('AlwaysLateral')[field], text, 'AlwaysLateral.' + field);
-  assert.equal(demo.params.length, 212);
+  assert.equal(demo.params.length, OFFICIAL_PARAM_COUNT);
   assert.equal(demo.numeric.length, 102);
   assert.equal(demo.run('Object.values(CAR_CATALOG).flat().length'), 333);
 });
@@ -394,7 +396,8 @@ test('Official additions retain menu paths, detail visibility, search and contro
   assert.equal(demo.param('PaddleMode').max, 3, 'personal fork mode 4 is excluded');
   for (const [name, path] of [
     ['CenterToFrontRatio', ['DRIVING', 'STEER', 'STEER_FEEL']],
-    ['TeslaAutoTurnSignals', ['DRIVING', 'START_AUTO', 'BASIC_START']],
+    ['TeslaAutoTurnSignals', ['DRIVING', 'TESLA', 'TESLA_FEATURES']],
+    ['StopGoLongAssist', ['DRIVING', 'CRUISE', 'CRUISE_STOPGO']],
     ['CanfdBlinkerControl', ['VEHICLE', 'VEH_CANFD']],
     ['ManualLaneChangeIndicator', ['DRIVING', 'STEER', 'STEER_LANECHANGE']],
     ['CommaPedalEnabled', ['VEHICLE', 'VEH_DEVICE']],
@@ -431,17 +434,20 @@ test('Weekly additions retain the official menu order, full descriptions and war
   assert.match(html, /\.setting-descr\{[^}]*line-height:1\.7[;}]/, 'official description row spacing');
   demo.click({ action: 'cat:DRIVING' });
   assert.match(demo.element('screen').innerHTML, /data-action="group:START_AUTO"/);
+  assert.match(demo.element('screen').innerHTML, /data-action="group:TESLA"/);
   assert.match(demo.element('screen').innerHTML, /data-action="group:STEER"/);
   for (const [group, sections] of [
     ['START_AUTO', [
-      ['시작 동작', ['AlwaysLateral', 'TeslaAutoTurnSignals', ...WEEKLY_TOGGLES.slice(1), 'AutoEngage', 'DisableMinSteerSpeed']],
+      ['시작 동작', ['AlwaysLateral', 'AutoEngage', 'DisableMinSteerSpeed']],
       ['오토크루즈', ['AutoCruiseControl', 'SoftHoldOnCancel', 'AutoGasTokSpeed', 'AutoGasCancelSpeed', 'AutoGasSyncSpeed', 'CruiseOnDist']],
     ]],
+    ['TESLA', [['Tesla 기능', TESLA_FEATURES]]],
     ['STEER', [
       ['차로 변경 (자동 턴)', ['LaneChangeNeedTorque', 'LaneChangeDelay', 'LaneChangeBsd', 'LaneLineCheck', 'AutoBlinkerControl',
         'ManualLaneChangeIndicator', 'ManualTurnIndicator', 'ModelDesireIndicator', 'ModelPathIndicator', 'BlinkerLatchedTurn',
         'LaneChangeLeverWait', 'AutoTurnControl', 'AutoTurnControlSpeedTurn', 'AutoTurnControlTurnEnd', 'AutoTurnMapChange']],
     ]],
+    ['CRUISE', [['정차·재출발', ['StopDistanceCarrot', 'StoppingAccel', 'VEgoStopping', 'AChangeCostStarting', 'StopGoLongAssist']]]],
   ]) {
     demo.click({ action: 'group:' + group });
     const screen = demo.element('screen').innerHTML;
@@ -451,8 +457,18 @@ test('Weekly additions retain the official menu order, full descriptions and war
       assert.deepEqual([...section.matchAll(/data-param="([^"]+)"/g)].map(match => match[1]), names);
     }
   }
-  for (const name of WEEKLY_TOGGLES) {
-    const expectedPath = name === 'ManualTurnIndicator' ? ['DRIVING', 'STEER', 'STEER_LANECHANGE'] : ['DRIVING', 'START_AUTO', 'BASIC_START'];
+  demo.click({ action: 'cat:VEHICLE' });
+  demo.click({ action: 'group:VEH_CANFD' });
+  assert.deepEqual([...demo.element('screen').innerHTML.matchAll(/data-param="([^"]+)"/g)].map(match => match[1]), [
+    'CanfdHDA2', 'HyundaiCanfdClusterDirectTx', 'CanfdBlinkerControl', 'CanfdBlinkerKick', 'CanfdBlinkerKickMode',
+    'CanfdBlinkerKickModelMode', 'CanfdBlinkerTest', 'CanfdDebug', 'HDPuse', 'CcncClusterDisplay', 'CcncTrafficBackground',
+  ]);
+  for (const [name, expectedPath] of [
+    ['ManualTurnIndicator', ['DRIVING', 'STEER', 'STEER_LANECHANGE']],
+    ...TESLA_FEATURES.slice(1).map(name => [name, ['DRIVING', 'TESLA', 'TESLA_FEATURES']]),
+    ['CanfdBlinkerKick', ['VEHICLE', 'VEH_CANFD']],
+    ['CanfdBlinkerKickModelMode', ['VEHICLE', 'VEH_CANFD']],
+  ]) {
     assert.deepEqual(JSON.parse(demo.run(`JSON.stringify(paramPath(${JSON.stringify(name)}).map(x=>x.id))`)), expectedPath);
     demo.click({ action: 'search' });
     const input = demo.element('searchInput');
@@ -464,9 +480,13 @@ test('Weekly additions retain the official menu order, full descriptions and war
     assert.ok(demo.element('screen').innerHTML.includes(`<p class="setting-descr">${demo.run(`esc(BY_NAME.get(${JSON.stringify(name)}).descr)`)}</p>`), name + ': complete warning/description');
   }
   for (const [name, revisedText] of [
-    ['ManualLaneChangeIndicator', '0.3초 뒤를 예측'],
+    ['ManualLaneChangeIndicator', '반대편 차선만 순간적으로 튀면'],
+    ['ManualTurnIndicator', 'D단 정차 확인 중'],
+    ['ModelDesireIndicator', '실제 양쪽 경계가 0.30~0.55초 동안'],
+    ['AutoBlinkerControl', '크루즈 CANCEL을 누르면 자동 깜빡이 요청과 유지가 중단됩니다'],
     ['AlwaysLateral', '세 손가락 접촉마다'],
     ['TeslaAutoTurnSignals', '실차 검증 전 일반 도로에서 사용하지 마세요.'],
+    ['ClusterHudScreenMode', 'Onroad P에서는 주차 화면'],
     ['HyundaiCameraSCC', '계기판용 순정 SCC MAIN 상태와 캐럿의 활성 선택을 분리'],
   ]) {
     demo.click({ action: 'detail:' + name });
@@ -500,13 +520,15 @@ test('Weekly default-off toggle controls edit only their own key through product
 
 test('Weekly toggle imports preserve missing keys, original types, nested values and precision until edited', async () => {
   const demo = loadDemo();
-  const text = '{"ManualTurnIndicator":1,"TeslaCanTrafficStop":"True","TeslaManualLaneSignals":false,"TeslaModelDesireSignals":{"nested":[false,null,9007199254740993],"ratio":1.234567890123456789012345},"TeslaModelPathSignals":null,"VEgoStopping":50.625000000000000000123,"FutureUnknown":{"values":["001",true,null],"exact":9.876543210987654321}}';
+  const text = '{"ManualTurnIndicator":1,"TeslaCanTrafficStop":"True","TeslaManualLaneSignals":false,"TeslaModelDesireSignals":{"nested":[false,null,9007199254740993],"ratio":1.234567890123456789012345},"TeslaModelPathSignals":null,"TeslaAutoSpeedLimit":"yes","CanfdBlinkerKick":2,"VEgoStopping":50.625000000000000000123,"FutureUnknown":{"values":["001",true,null],"exact":9.876543210987654321}}';
   const fixture = JSON.parse(text);
   for (const name of WEEKLY_TOGGLES) {
     await demo.importText(text);
-    demo.click({ action: 'cat:DRIVING' });
-    demo.click({ action: 'group:START_AUTO' });
-    demo.click({ action: 'group:STEER' });
+    const [category, group] = JSON.parse(demo.run(`JSON.stringify(paramPath(${JSON.stringify(name)}).map(x=>x.id))`));
+    demo.click({ action: 'cat:' + category });
+    assert.ok(demo.element('screen').innerHTML.includes(`data-action="group:${group}"`));
+    demo.click({ action: 'group:' + group });
+    assert.ok(demo.element('screen').innerHTML.includes(`data-param="${name}"`));
     demo.click({ action: 'detail:' + name });
     assert.deepEqual(await demo.exported(), fixture, name + ': display leaves every raw value intact');
     assert.equal(demo.run('state.dirty.size'), 0);
@@ -527,6 +549,46 @@ test('Weekly toggle imports preserve missing keys, original types, nested values
     assert.match(demo.element('screen').innerHTML, /data-missing/);
   }
   assert.deepEqual(await demo.exported(), { FutureUnknown: { untouched: [false, null] } }, 'viewing missing default-off toggles never inserts them');
+});
+
+test('CANFD and stop-go choices preserve every untouched JSON token through edit and reload', async () => {
+  const session = new Map(), demo = loadDemo({ session, startup: true });
+  const before = `{
+  "TeslaAutoSpeedLimit": "yes",
+  "CanfdBlinkerKick": -1,
+  "CanfdBlinkerKickMode": 1.0,
+  "CanfdBlinkerKickModelMode": " 02 ",
+  "CcncClusterDisplay": false,
+  "StopGoLongAssist": 2.5,
+  "FutureUnknown": {"exact":9007199254740993, "values":[true, null]}
+}\n`;
+  await demo.importText(before);
+  demo.click({ action: 'cat:VEHICLE' });
+  demo.click({ action: 'group:VEH_CANFD' });
+  assert.match(demo.card(demo.param('CcncTrafficBackground')), /data-missing/);
+  assert.match(demo.control(demo.param('CanfdBlinkerKickMode')), /aria-checked="true"[^>]*data-value="0"/);
+  assert.match(demo.control(demo.param('CcncClusterDisplay')), /aria-checked="false"[^>]*data-value="1"/);
+  const modelMode = 'CanfdBlinkerKickModelMode';
+  assert.match(demo.control(demo.param(modelMode)), /data-choice="CanfdBlinkerKickModelMode"[^>]*>3번<\/button>/);
+  demo.click({ choice: modelMode });
+  const choices = demo.element('choiceBody').innerHTML;
+  assert.deepEqual([...choices.matchAll(/data-choice-value="([^"]+)">([^<]+)/g)].map(([, value, label]) => [value, label]), [
+    ['0', '유지 (기본)'], ['1', '끔'], ['2', '3번'], ['3', '5번'], ['4', '7번'],
+  ]);
+  assert.match(choices, /class="active" data-choice-value="2">3번/);
+  assert.equal(await demo.exportedText(), before, 'viewing new settings preserves the complete export');
+  demo.click({ choiceValue: '4' });
+  demo.click({ action: 'cat:DRIVING' });
+  demo.click({ action: 'group:CRUISE' });
+  const stopGo = demo.control(demo.param('StopGoLongAssist'));
+  assert.deepEqual([...stopGo.matchAll(/data-value="([^"]+)"[^>]*aria-pressed="([^"]+)"/g)].map(([, value, active]) => [value, active]), [
+    ['0', 'false'], ['1', 'false'], ['2', 'true'], ['3', 'false'],
+  ]);
+  demo.click({ set: 'StopGoLongAssist', value: '3' });
+  const after = before.replace('"CanfdBlinkerKickModelMode": " 02 "', '"CanfdBlinkerKickModelMode": "4"')
+    .replace('"StopGoLongAssist": 2.5', '"StopGoLongAssist": "3"');
+  assert.equal(await demo.exportedText(), after);
+  assert.equal(await loadDemo({ session, startup: true }).exportedText(), after);
 });
 
 test('ATC distance is a 0–500 numeric row and x1 preserves the official stored value', () => {
@@ -710,6 +772,7 @@ test('Hyundai, Kia, Genesis, Toyota and Lexus hide the three brand-restricted se
     [{ CarName: 'HYUNDAI TEST FINGERPRINT' }, true], [{ CarName: 'KIA TEST FINGERPRINT' }, true],
     [{ CarName: 'GENESIS TEST FINGERPRINT' }, true], [{ CarSelected3: 'Toyota RAV4 2023-25' }, true],
     [{ CarSelected3: 'Lexus RX 2020-22' }, true], [{ CarName: 'Toyota RAV4 2023-25' }, true],
+    [{ CarSelected3: 'Kia Ray EV', CommaPedalEnabled: '1' }, true],
     [{ CarName: 'TOYOTA UNKNOWN FINGERPRINT' }, false], [{ CarSelected3: 'Ford Escape 2020-22' }, false], [{}, false],
   ]) {
     const fixture = { ...car, LongTuningKpV: 199, LongTuningKiV: '017', FutureUnknown: 0.123456789012345 };
@@ -847,7 +910,7 @@ test('Legacy update keep-tab selection preserves the complete existing draft and
     assert.equal(demo.run('state.recoveryBlocked'), false);
     const text = await demo.exportedText();
     if (cleared) {
-      assert.equal(Object.keys(JSON.parse(text)).length, 212);
+      assert.equal(Object.keys(JSON.parse(text)).length, OFFICIAL_PARAM_COUNT);
       assert.equal(Object.hasOwn(JSON.parse(text), 'FutureUnknown'), false);
     } else {
       const { resolvedUpdate, ...saved } = JSON.parse(fixture.session.get(TAB_DRAFT_KEY)), original = JSON.parse(fixture.draftRaw);
@@ -917,7 +980,7 @@ test('Legacy update unresolved choices can be replaced explicitly by a JSON impo
     const text = await demo.exportedText();
     assert.equal(demo.run('state.recoveryBlocked'), false);
     if (replacement === 'import') assert.match(text, /"Recovered": 9007199254740993/);
-    else assert.equal(Object.keys(JSON.parse(text)).length, 212);
+    else assert.equal(Object.keys(JSON.parse(text)).length, OFFICIAL_PARAM_COUNT);
     const refreshed = loadDemo({ ...fixture, hosted: true, href: demo.location.href, startup: true });
     assert.equal(await refreshed.exportedText(), text, replacement + ': deliberate replacement is not followed by an old choice');
   }
@@ -1149,7 +1212,7 @@ test('Update transition matrix preserves committed authority across persistence 
       if (['chooseLegacy', 'keepTab'].includes(action) && failure !== 'none') assertTransitionBlocked(demo, 'a failed selection remains blocked until recovery');
       else assert.equal(await demo.exportedText(), selected[action], 'a deliberate import/reset remains available in memory');
       if (next === 'native' && !durable) {
-        demo.run('updateState.latest=DEMO_VERSION;updateState.assetUrl="https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/download/v1.0.20/webcarrot-offline-demo.html"');
+        demo.run('updateState.latest="v"+DEMO_VERSION;updateState.assetUrl=`https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/download/${updateState.latest}/webcarrot-offline-demo.html`');
         demo.click({ action: 'applyHostedUpdate' });
         assert.equal(demo.navigations.length, 0, 'an actual update action cannot navigate while required persistence still fails');
         assert.equal(fixture.session.get(LEGACY_UPDATE_KEY), snapshot, 'a failed native attempt leaves the complete unresolved handoff intact');
@@ -1280,13 +1343,14 @@ function persistDraft(){
     assert.equal(await olderDocument.exportedText(), expected);
     const committedRaw = fixture.session.get(TAB_DRAFT_KEY);
     assert.equal(Object.hasOwn(JSON.parse(committedRaw), 'resolvedUpdate'), false, 'the old document cannot mark a new choice resolved');
-    if (next === 'native') olderDocument.run('storePendingUpdate("v1.0.20")');
-    const restored = loadDemo({ ...fixture, hosted: true, search: next === 'native' ? '?version=v1.0.20' : '', startup: true });
+    const target = olderDocument.run('"v"+DEMO_VERSION');
+    if (next === 'native') olderDocument.run(`storePendingUpdate(${JSON.stringify(target)})`);
+    const restored = loadDemo({ ...fixture, hosted: true, search: next === 'native' ? `?version=${target}` : '', startup: true });
     if (next === 'reload') {
       assertLegacyChoice(restored);
       assert.equal(JSON.parse(fixture.session.get(LEGACY_UPDATE_KEY)).draftRaw, committedRaw, 'keep-tab offers the actual current record rather than frozen A');
       restored.click({ action: 'keepTabBackup' });
-    }
+    } else assert.equal(restored.location.searchParams.get('version'), null, 'startup with a valid tab draft consumes the update URL');
     assert.equal(await restored.exportedText(), expected);
     assert.equal(await loadDemo({ ...fixture, hosted: true, startup: true }).exportedText(), expected);
   });
@@ -1427,7 +1491,7 @@ test('Corrupt or unreadable session drafts never silently export defaults and ca
   }
   const demo = loadDemo({ session: new Map([['webcarrot-offline-demo:backup-draft:v1', '{bad']]), startup: true });
   demo.click({ action: 'new' });
-  assert.equal(Object.keys(await demo.exported()).length, 212);
+  assert.equal(Object.keys(await demo.exported()).length, OFFICIAL_PARAM_COUNT);
 });
 
 test('A stale tab pagehide cannot replace another tab update handoff or draft', async () => {
@@ -1502,7 +1566,7 @@ test('New demo and canceled file selection preserve deliberate lifecycle boundar
   demo.confirmAnswer(true);
   demo.click({ action: 'new' });
   const defaults = await demo.exportedText();
-  assert.equal(Object.keys(JSON.parse(defaults)).length, 212);
+  assert.equal(Object.keys(JSON.parse(defaults)).length, OFFICIAL_PARAM_COUNT);
   assert.equal(Object.hasOwn(JSON.parse(defaults), 'Unknown'), false);
   assert.equal(await loadDemo({ session, startup: true }).exportedText(), defaults, 'explicit new demo replaces the saved draft');
 });
@@ -1542,8 +1606,8 @@ test('A pointer gesture in flight cannot edit a newly imported dataset or a new 
 test('Stored BOOL coercion and inferred BOOL controls follow the official restore service without changing raw types', async () => {
   const demo = loadDemo();
   // Pinned params-service.py _coerce_bool: string true/1/yes/on, otherwise scalar truthiness.
-  // VehicleNaviSchoolZoneControl and SoftHoldOnCancel are native BOOL; these two display keys infer BOOL.
-  for (const name of ['VehicleNaviSchoolZoneControl', 'SoftHoldOnCancel', 'ShowPathEnd', 'ShowRouteInfo']) {
+  // ShowPathEnd and ShowRouteInfo infer BOOL; the other keys here are native BOOL.
+  for (const name of ['VehicleNaviSchoolZoneControl', 'SoftHoldOnCancel', 'CanfdBlinkerKick', 'TeslaAutoSpeedLimit', 'ShowPathEnd', 'ShowRouteInfo']) {
     const p = demo.param(name);
     assert.deepEqual([p.min, p.max], [0, 1]);
     for (const raw of ['yes', 'ON', 'true', '1', 'false', 'off', '0', 'unexpected', 2, -1, 0, true, false]) {
@@ -1661,10 +1725,10 @@ test('Draft metadata corruption is blocked and cleanup failures never destroy re
   assert.match(await removeFailure.exportedText(), /9007199254740993/);
 });
 
-test('All 183 native INT controls display the actual restored readback without normalizing untouched exports', async () => {
+test('All 188 native INT controls display the actual restored readback without normalizing untouched exports', async () => {
   const demo = loadDemo();
-  assert.equal(NATIVE_INT_KEYS.length, 183);
-  assert.equal(new Set(NATIVE_INT_KEYS).size, 183);
+  assert.equal(NATIVE_INT_KEYS.length, 188);
+  assert.equal(new Set(NATIVE_INT_KEYS).size, 188);
   assert.equal(INT_RESTORE_CASES.length, 43);
   for (const [raw, restored] of INT_RESTORE_CASES.filter(([, value]) => value !== null)) {
     const fixture = { ...Object.fromEntries(NATIVE_INT_KEYS.map(name => [name, raw])), FutureUnknown: ['001', null] };
