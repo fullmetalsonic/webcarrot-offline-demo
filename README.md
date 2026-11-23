@@ -1,4 +1,4 @@
-# WebCarrot 오프라인 설정 데모 v1.0.21 | WebCarrot Offline Settings Demo v1.0.21
+# WebCarrot 오프라인 설정 데모 v1.0.22 | WebCarrot Offline Settings Demo v1.0.22
 
 [데모 바로 실행 · Open the demo](https://fullmetalsonic.github.io/webcarrot-offline-demo/) · [최신 HTML 다운로드 · Download the latest HTML](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases/latest/download/webcarrot-offline-demo.html) · [변경 기록 · Releases](https://github.com/fullmetalsonic/webcarrot-offline-demo/releases)
 
@@ -34,6 +34,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 업데이트
 
+- **v1.0.22**는 공식 carrot-wip [8391409](https://github.com/ajouatom/openpilot/commit/8391409993343755de87040ab12cb71d0815c9aa)의 설정 217개를 반영합니다. 깜박이 제어를 차량·하드웨어의 전용 그룹으로 옮기고, 우회전 전 자동 차선변경 거리 상한을 2,000m로 확장했습니다. 원본에서 제거된 `StopGoLongAssist`, `CanfdBlinkerKickModelMode`는 화면에서 제외하며 기존 백업에 들어 있는 값은 내보낼 때 보존합니다. 변경된 10개 항목의 표시명·전체 설명도 반영했습니다.
 - **v1.0.21**은 공식 carrot-wip [2760b40](https://github.com/ajouatom/openpilot/commit/2760b406e2187ec82e0f9027b248b57f72d44a9f)의 설정 219개를 반영합니다. Tesla 전용 그룹에 기존 5개 항목과 자동 속도 휠을 배치하고, 정차·출발 롱컨 보정, CANFD 깜빡이 및 CCNC 계기판 설정을 추가했습니다. 기존 항목 8개의 표시명 또는 설명도 원본에 맞췄습니다.
 - **v1.0.20**은 공식 carrot-wip [e318f76](https://github.com/ajouatom/openpilot/commit/e318f767ff7dc96d25a3bcc2b46f9f3daf6e9e42) 기준으로 상시 조향의 전체 설명을 갱신했습니다. 저장소 정리 실패 뒤 같은 구버전 백업으로 재업데이트할 때 다른 보관본이 선택되는 문제와, 이전 화면에서 편집한 최신 탭 보관값이 과거 복구 후보에 가려지는 문제를 수정했습니다. 설정 개수·입력 방식·백업 형식은 유지합니다.
 - **v1.0.19**는 v1.0.16의 업데이트 백업이 예전 탭 보관값이나 새 데모 표식에 가려지는 문제를 수정했습니다. 두 보관본이 충돌하면 **구버전 업데이트 백업 사용** 또는 **이전 탭 보관값 유지**를 선택하며, 선택 전 새로고침해도 후보를 유지합니다. 구버전에서 수정한 뒤 업데이트했다면 첫 번째 백업을 선택하세요. 수정하지 않은 값과 미지원 키의 원문은 그대로 보존합니다.
@@ -53,7 +54,7 @@ WebCarrot 설정 메뉴를 오프라인에서 살펴보고, 차량·파라미터
 
 ## 데모의 범위
 
-현재 임베디드 원본 정의에는 **파라미터 219개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
+현재 임베디드 원본 정의에는 **파라미터 217개**와 **차량 문서 이름 333개**가 포함됩니다. 서버 연결이 필요한 주행·로그·터미널·실제 장치 설정 기능은 제공하지 않습니다. 원본 정의 자체에 설명이 없는 파라미터에는 데모가 설명을 지어내지 않습니다.
 
 원본 carrot-wip가 바뀌어도 이 저장소의 데모가 자동으로 바뀌지는 않습니다. 공식 복원 코드를 시험용 저장소에서 검증했으며, 실제 콤마 복원과 재시작 후 값 확인은 별도입니다.
 
@@ -102,6 +103,7 @@ The device shows three longitudinal tuning settings on the Ray EV after confirmi
 
 ### Updates
 
+- **v1.0.22** matches the 217 settings in official carrot-wip [8391409](https://github.com/ajouatom/openpilot/commit/8391409993343755de87040ab12cb71d0815c9aa). Indicator controls have their own Vehicle & Hardware group, and the pre-turn lane-change distance supports up to 2,000m. The upstream-removed `StopGoLongAssist` and `CanfdBlinkerKickModelMode` are removed from the menu. Their imported backup values are preserved on export. Labels or full descriptions for ten definitions were synchronized.
 - **v1.0.21** matches the 219 settings in official carrot-wip [2760b40](https://github.com/ajouatom/openpilot/commit/2760b406e2187ec82e0f9027b248b57f72d44a9f). The new Tesla group contains five relocated settings and the automatic speed wheel. The update also adds stop/go longitudinal assist and the CANFD blinker and CCNC cluster settings, and refreshes labels or descriptions for eight existing settings.
 - **v1.0.20** follows official carrot-wip [e318f76](https://github.com/ajouatom/openpilot/commit/e318f767ff7dc96d25a3bcc2b46f9f3daf6e9e42), including the full revised Always Lateral descriptions. It fixes repeated identical legacy updates after snapshot-cleanup failure selecting the wrong backup, and older recovery snapshots hiding a newer draft saved by a resumed document. Setting counts, input controls and the backup payload format are unchanged.
 - **v1.0.19** repairs v1.0.16 update backups being hidden by an older tab draft or a new-demo marker. Conflicting backups require an explicit choice: **구버전 업데이트 백업 사용** (use the legacy update backup) or **이전 탭 보관값 유지** (keep the existing tab backup). Candidates survive reloads before selection. Choose the first option after editing in the older version and updating. Untouched values and unknown keys keep their original JSON tokens.
@@ -121,7 +123,7 @@ The device shows three longitudinal tuning settings on the Ray EV after confirmi
 
 ### Scope
 
-The embedded upstream definitions currently include **219 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
+The embedded upstream definitions currently include **217 parameters** and **333 vehicle document names**. Features that require a device connection—drive controls, logs, terminal and live device settings—are not available. The demo does not invent descriptions when the upstream definition has none.
 
 The demo does not automatically track changes in upstream carrot-wip. Restore compatibility was checked with the official code and a test parameter store; a physical Comma restore and post-restart readback are separate checks.
 
